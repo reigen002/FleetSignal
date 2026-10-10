@@ -21,7 +21,7 @@ jobs:
       run:
         working-directory: caterpillar-smart-rental/backend
     env:
-      FLEETSIGNAL_DATABASE_URL: sqlite:///${{ runner.temp }}/fleetsignal-ci.db
+      FLEETSIGNAL_DATABASE_URL: sqlite:////tmp/fleetsignal-ci.db
       FLEETSIGNAL_DEMO_MODE: 'false'
     steps:
       - uses: actions/checkout@v4
