@@ -1,70 +1,36 @@
-"""
-Test fixtures and shared infrastructure.
+"""Each test runs startup, requests and services against one temporary file DB."""
+from pathlib import Path
 
-Uses an in-memory SQLite DB so tests never touch srts.db.
-
-The critical detail: SQLite's in-memory databases are per-connection.
-We use StaticPool to force all connections to share a single in-memory
-DB, so tables created in setup remain visible across connections.
-"""
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-import app.database as _db_module
-from app.database import Base, get_db
-from app.main import app
-from app.seed import seed_database
-from app.routers.alerts import refresh_alerts
+from app.main import create_app
+from app.settings import Settings
 
 
-def _make_test_engine():
-    return create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+@pytest.fixture
+def test_app(tmp_path):
+    application = create_app(Settings(
+        database_url=f"sqlite:///{(tmp_path / 'fleetsignal.db').as_posix()}",
+        data_dir=Path(__file__).resolve().parents[2] / "data",
+        demo_mode=True,
+    ))
+    # Startup runs once, using the same resources request dependencies will use.
+    with TestClient(application, raise_server_exceptions=True) as test_client:
+        yield application, test_client
 
 
-@pytest.fixture(scope="function")
-def db_session():
-    """
-    Fresh in-memory SQLite session with seed data, using StaticPool so all
-    connections see the same database state.
-    """
-    test_engine = _make_test_engine()
-    TestingSession = sessionmaker(bind=test_engine, autocommit=False, autoflush=False)
-
-    Base.metadata.create_all(bind=test_engine)
-    session = TestingSession()
-    seed_database(session)
-    refresh_alerts(session)
-
-    # Patch module globals so the app's lifespan and any direct SessionLocal()
-    # calls also land in the same in-memory database.
-    orig_engine = _db_module.engine
-    orig_session = _db_module.SessionLocal
-    _db_module.engine = test_engine
-    _db_module.SessionLocal = TestingSession
-
-    yield session
-
-    _db_module.engine = orig_engine
-    _db_module.SessionLocal = orig_session
-    session.close()
-    Base.metadata.drop_all(bind=test_engine)
+@pytest.fixture
+def db_session(test_app):
+    application, _client = test_app
+    session = application.state.session_factory()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
-@pytest.fixture(scope="function")
-def client(db_session):
-    """TestClient wired to the in-memory DB session via dependency override."""
-
-    def override_get_db():
-        yield db_session
-
-    app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app, raise_server_exceptions=True) as c:
-        yield c
-    app.dependency_overrides.clear()
+@pytest.fixture
+def client(test_app):
+    _application, test_client = test_app
+    yield test_client

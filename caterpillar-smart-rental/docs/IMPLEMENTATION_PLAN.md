@@ -1,5 +1,7 @@
 # Caterpillar Smart Rental Tracking System — Implementation Plan
 
+> **Historical reference:** This is the original SRTS hackathon implementation plan. Its setup and architecture statements describe that phase; use [README](../README.md), [API_CONTRACT.md](API_CONTRACT.md), and [RELIABILITY.md](RELIABILITY.md) for current FleetSignal behavior.
+
 > **For the implementing agents:** This is the handoff document. It is self-contained — you do not need the planning conversation. Read `docs/HACKATHON_SPEC.md` (authoritative product spec) and `docs/API_CONTRACT.md` (frozen FE/BE boundary) alongside it. Build only what is described here; the spec's MVP priority order (§15) governs any cut.
 
 **Goal:** A polished, reliable vertical slice that lets a Caterpillar dealer move **Know → Detect → Explain → Predict → Act** across a rented fleet, backed by the official 7-asset dataset.

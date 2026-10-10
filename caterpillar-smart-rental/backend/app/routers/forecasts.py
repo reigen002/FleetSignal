@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import math
 from collections import defaultdict
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -211,12 +212,13 @@ def _site_level_forecast(
     equipment_type: str,
     all_assets: list[Asset],
     demo_date_str: str = "2025-05-12",
+    data_dir: Path | None = None,
 ) -> Optional[ForecastOut]:
     """
     Build a site × equipment-type forecast row using supplementary demand data.
     Returns None if no demand history exists for this segment.
     """
-    periods = get_demand_history(site_id, equipment_type)
+    periods = get_demand_history(site_id, equipment_type, data_dir)
     if not periods:
         return None
 
@@ -378,6 +380,7 @@ def get_forecasts(
     """
     from app.clock import get_demo_date
     demo_date_str = get_demo_date().isoformat()
+    data_dir = db.info.get("data_dir")
 
     # All assets (used for supply calc)
     all_assets = db.query(Asset).all()
@@ -413,7 +416,7 @@ def get_forecasts(
 
     # ── Site-level rows (new, only when supplement data exists) ───────────
     if site_id:
-        for seg in all_supplement_segments():
+        for seg in all_supplement_segments(data_dir):
             if seg["site_id"] != site_id:
                 continue
             if equipment_type and seg["equipment_type"].lower() != equipment_type.lower():
@@ -423,13 +426,14 @@ def get_forecasts(
                 seg["equipment_type"],
                 all_assets,
                 demo_date_str,
+                data_dir,
             )
             if row is not None:
                 results.append(row)
     else:
         # No site_id filter — emit site-level rows for all supplement segments
         # so the frontend can always see them (they have distinct site_id values)
-        for seg in all_supplement_segments():
+        for seg in all_supplement_segments(data_dir):
             if equipment_type and seg["equipment_type"].lower() != equipment_type.lower():
                 continue
             row = _site_level_forecast(
@@ -437,6 +441,7 @@ def get_forecasts(
                 seg["equipment_type"],
                 all_assets,
                 demo_date_str,
+                data_dir,
             )
             if row is not None:
                 results.append(row)

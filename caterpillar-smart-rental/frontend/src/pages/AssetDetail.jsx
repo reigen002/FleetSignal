@@ -37,7 +37,7 @@ export function AssetDetail() {
   // keeps its button/select disabled until this resolves) rely on it, not just
   // on `load()` having been called.
   const load = useCallback(() => {
-    const assetLoaded = api.getAsset(id).then(setAsset).catch((e) => setError(e.status === 404 ? `Asset ${id} not found.` : e.message || "Failed to load asset."));
+    const assetLoaded = api.getAsset(id).then(setAsset).catch((e) => setError(e.status === 404 ? `Asset ${id} not found.${e.requestId ? ` (Request ID: ${e.requestId})` : ""}` : e.message || "Failed to load asset."));
     const telemetryLoaded = api.getTelemetry(id).then((r) => setTelemetry(r.frames));
     return Promise.all([assetLoaded, telemetryLoaded]);
   }, [id]);
@@ -55,19 +55,16 @@ export function AssetDetail() {
 
   async function handleCheckout(body) {
     await api.checkout(id, body);
-    await api.refreshAlerts();
     setModal(null);
     load();
   }
   async function handleCheckin(body) {
     await api.checkin(id, body);
-    await api.refreshAlerts();
     setModal(null);
     load();
   }
   async function handleRunScenario(scenario) {
     await api.simulate(id, scenario);
-    await api.refreshAlerts();
     await load();
     setRunToken((t) => t + 1);
   }

@@ -1,42 +1,17 @@
 """
 Seed data — the official dataset from the hackathon spec.
-Run via: POST /admin/seed  or automatically on first startup.
+In explicit demo mode: POST /admin/seed or automatic seeding on first startup.
 
 NULL site/operator values are intentional anomalies and preserved exactly.
-Asset data is loaded from data/seed/official_assets.csv so the spec's
-official dataset lives in exactly one place.
+Asset records are loaded from the configured official CSV.
 """
 import csv
+import json
 from datetime import datetime
 from pathlib import Path
 from sqlalchemy.orm import Session
 from app.models import Alert, Asset, Site, Operator, RentalEvent, Telemetry
-
-_ASSETS_CSV = Path(__file__).resolve().parents[2] / "data" / "seed" / "official_assets.csv"
-
-
-def _load_assets() -> list[dict]:
-    with open(_ASSETS_CSV, newline="") as f:
-        rows = list(csv.DictReader(f))
-
-    assets = []
-    for row in rows:
-        assets.append({
-            "id": row["id"],
-            "equipment_type": row["equipment_type"],
-            "site_id": row["site_id"] or None,
-            "operator_id": row["operator_id"] or None,
-            "checkout_date": datetime.fromisoformat(row["checkout_date"].replace("Z", "+00:00")),
-            "expected_return_date": datetime.fromisoformat(row["expected_return_date"].replace("Z", "+00:00")),
-            "engine_hrs_per_day": float(row["engine_hrs_per_day"]),
-            "idle_hrs_per_day": float(row["idle_hrs_per_day"]),
-            "operating_days": int(row["operating_days"]),
-            "status": row["status"],
-            "customer_name": row["customer_name"] or None,
-            "qr_code": row["qr_code"],
-            "rfid_tag": row["rfid_tag"],
-        })
-    return assets
+from app.settings import Settings
 
 
 SITES = [
@@ -55,13 +30,60 @@ OPERATORS = [
     {"id": "OP114", "name": "Carlos Mendoza",    "license_class": "Medium", "contact": "+63-921-0005"},
 ]
 
-# Snapshot for import-time inspection (e.g. tests). seed_database() and
-# _seed_lifecycle_events() call _load_assets() fresh each time so
-# POST /admin/reset always reflects the current CSV on disk.
-ASSETS = _load_assets()
+REQUIRED_SCENARIO_FILES = (
+    "demand_history_supplement.json", "telemetry_scenarios.json",
+    "golden_insights.json", "forecasts.json", "anomalies.json",
+)
 
 
-def _seed_lifecycle_events(db: Session) -> None:
+def load_assets(data_dir: Path | None = None) -> list[dict]:
+    """Read the official CSV only when explicitly loading or seeding demo data."""
+    directory = Path(data_dir) if data_dir is not None else Settings().data_dir
+    path = directory / "seed" / "official_assets.csv"
+    try:
+        with path.open(newline="", encoding="utf-8-sig") as source:
+            rows = list(csv.DictReader(source))
+    except OSError as error:
+        raise ValueError(f"Demo asset CSV is missing or unreadable: {path}") from error
+    if not rows:
+        raise ValueError(f"Demo asset CSV is empty: {path}")
+
+    records = []
+    for number, row in enumerate(rows, start=2):
+        try:
+            record = {
+                key: row[key] or None
+                for key in ("id", "equipment_type", "status", "site_id", "operator_id",
+                            "customer_name", "qr_code", "rfid_tag")
+            }
+            if not record["id"] or not record["equipment_type"] or not record["status"]:
+                raise ValueError("id, equipment_type and status are required")
+            for key in ("checkout_date", "expected_return_date"):
+                record[key] = datetime.fromisoformat(row[key].replace("Z", "+00:00")) if row[key] else None
+            for key in ("engine_hrs_per_day", "idle_hrs_per_day"):
+                record[key] = float(row[key])
+            record["operating_days"] = int(row["operating_days"])
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise ValueError(f"Invalid demo asset CSV {path}, row {number}: {error}") from error
+        records.append(record)
+    return records
+
+
+def validate_demo_data(data_dir: Path) -> None:
+    """Fail startup with the named input instead of silently missing demo data."""
+    load_assets(data_dir)
+    for filename in REQUIRED_SCENARIO_FILES:
+        path = data_dir / "scenarios" / filename
+        try:
+            with path.open(encoding="utf-8") as source:
+                payload = json.load(source)
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError(f"Missing or invalid demo scenario JSON: {path}") from error
+        if not isinstance(payload, (dict, list)) or not payload:
+            raise ValueError(f"Empty or invalid demo scenario JSON: {path}")
+
+
+def _seed_lifecycle_events(db: Session, assets: list[dict]) -> None:
     """
     Generate CHECKOUT/CHECKIN/OVERDUE_FLAG events from each asset's official
     checkout/return dates, so the lifecycle timeline isn't empty until a live
@@ -71,7 +93,7 @@ def _seed_lifecycle_events(db: Session) -> None:
     from app.clock import get_demo_now
     demo_now = get_demo_now()
 
-    for a in _load_assets():
+    for a in assets:
         asset_id = a["id"]
         if db.query(RentalEvent).filter(RentalEvent.asset_id == asset_id).first():
             continue
@@ -107,6 +129,7 @@ def seed_database(db: Session) -> dict:
     Idempotent — safe to call multiple times.
     Returns counts of inserted records.
     """
+    assets = load_assets(db.info.get("data_dir"))
     counts = {"sites": 0, "operators": 0, "assets": 0}
 
     for s in SITES:
@@ -121,13 +144,13 @@ def seed_database(db: Session) -> dict:
 
     db.flush()  # ensure FKs exist before asset insert
 
-    for a in _load_assets():
+    for a in assets:
         if not db.get(Asset, a["id"]):
             db.add(Asset(**a))
             counts["assets"] += 1
 
     db.commit()
-    _seed_lifecycle_events(db)
+    _seed_lifecycle_events(db, assets)
     return counts
 
 

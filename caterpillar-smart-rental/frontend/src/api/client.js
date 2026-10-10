@@ -21,8 +21,12 @@ async function realFetch(path, opts) {
   let body = null;
   try { body = await res.json(); } catch { /* empty body */ }
   if (!res.ok) {
-    const err = new Error(body?.detail ?? `Request failed (${res.status})`);
+    const requestId = [res.headers.get("X-Request-ID"), body?.request_id]
+      .find((value) => typeof value === "string" && /^[A-Za-z0-9._:-]{1,64}$/.test(value));
+    const message = typeof body?.detail === "string" ? body.detail : `Request failed (${res.status})`;
+    const err = new Error(`${message}${requestId ? ` (Request ID: ${requestId})` : ""}`);
     err.status = res.status;
+    err.requestId = requestId ?? null;
     throw err;
   }
   return body;

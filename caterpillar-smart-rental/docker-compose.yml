@@ -1,18 +1,25 @@
-version: "3.9"
-
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
-      - srts_db:/app/data
+      - fleetsignal_db:/var/lib/fleetsignal
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
     environment:
-      - PYTHONUNBUFFERED=1
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      PYTHONUNBUFFERED: "1"
+      FLEETSIGNAL_DEMO_MODE: "true"
+      FLEETSIGNAL_DATA_DIR: /opt/fleetsignal/data
+      FLEETSIGNAL_DATABASE_URL: sqlite:////var/lib/fleetsignal/fleetsignal.db
+      FLEETSIGNAL_SQLITE_BUSY_TIMEOUT_MS: "5000"
+      FLEETSIGNAL_ALLOWED_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173","http://localhost:4173","http://127.0.0.1:4173"]'
 
 volumes:
-  srts_db:
+  fleetsignal_db:

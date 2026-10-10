@@ -1,5 +1,7 @@
 # Caterpillar Smart Rental Tracking System (SRTS)
 
+> **Historical reference:** This preserves the original SRTS hackathon requirements and sample handout. Current FleetSignal setup and reliability behavior are documented in [README](../README.md), [API_CONTRACT.md](API_CONTRACT.md), and [RELIABILITY.md](RELIABILITY.md).
+
 ## 1. Document Purpose
 
 This document captures the Caterpillar hackathon problem statement, the requirements communicated by the organizers, the official sample data provided in the handout, and the expected capabilities of the solution.

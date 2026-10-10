@@ -4,9 +4,9 @@ Pydantic schemas — the API contract.
 These are stable shapes that the frontend can depend on.
 Internal DB models may evolve without breaking these contracts.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -120,12 +120,61 @@ class RentalEventOut(BaseModel):
 # Telemetry
 # ---------------------------------------------------------------------------
 
+class TelemetryEventIn(BaseModel):
+    """Validated semantic event. Server identity, receipt and scenario stay private."""
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+    event_id: str = Field(min_length=1, max_length=128)
+    asset_id: str = Field(min_length=1, max_length=20)
+    timestamp: AwareDatetime
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180)
+    engine_temp_c: Optional[float] = None
+    engine_hours: Optional[float] = Field(default=None, ge=0)
+    fuel_level_pct: Optional[float] = Field(default=None, ge=0, le=100)
+    fuel_consumption_lph: Optional[float] = Field(default=None, ge=0)
+    idle_time_hours: Optional[float] = Field(default=None, ge=0)
+    seatbelt_on: Optional[bool] = None
+    fault_code: Optional[str] = Field(default=None, max_length=50)
+    fault_description: Optional[str] = Field(default=None, max_length=200)
+
+    @field_validator("event_id")
+    @classmethod
+    def no_whitespace(cls, value):
+        if any(character.isspace() for character in value):
+            raise ValueError("event_id cannot contain whitespace")
+        return value
+
+    @field_validator("timestamp")
+    @classmethod
+    def normalize_utc(cls, value):
+        return value.astimezone(timezone.utc)
+
+    @model_validator(mode="after")
+    def sensor_payload(self):
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must be provided together")
+        sensors = self.model_dump(exclude={"event_id", "asset_id", "timestamp"})
+        if all(value is None for value in sensors.values()):
+            raise ValueError("at least one sensor or fault field is required")
+        return self
+
+
+class TelemetryEventResult(BaseModel):
+    event_id: str
+    telemetry_id: int
+    asset_id: str
+    duplicate: bool
+
+
 class TelemetryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     asset_id: str
     timestamp: datetime
+    event_id: Optional[str] = None
+    received_at: Optional[datetime] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     engine_temp_c: Optional[float] = None
@@ -147,7 +196,7 @@ class SimulateRequest(BaseModel):
       | "seatbelt_violation" | "high_idle" | "abnormal_fuel"
     """
     scenario: str = "normal"
-    readings: int = 10           # how many data points to generate
+    readings: int = Field(default=10, ge=1, le=100)
 
 
 # ---------------------------------------------------------------------------

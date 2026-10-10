@@ -1,103 +1,122 @@
-"""
-FastAPI app factory — SRTS (Smart Rental Tracking System)
-"""
+"""FastAPI app factory; demo data and controls require explicit opt-in."""
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import APIRouter, Depends, FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.database import engine, get_db, SessionLocal
-from app.models import Base
-from app.seed import seed_database
-from app.routers import assets, alerts, recommendations, forecasts
-from app.routers.alerts import refresh_alerts
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Create tables if they don't exist
-    Base.metadata.create_all(bind=engine)
-
-    # Auto-seed on first start
-    db = SessionLocal()
-    try:
-        counts = seed_database(db)
-        if any(v > 0 for v in counts.values()):
-            print(f"[SRTS] Database seeded: {counts}")
-            # Generate initial alerts from seed data
-            refresh_alerts(db)
-            print("[SRTS] Initial alert scan complete.")
-    finally:
-        db.close()
-
-    yield
-    # No teardown needed for SQLite demo
-
-
-app = FastAPI(
-    title="SRTS — Smart Rental Tracking System",
-    description=(
-        "Caterpillar dealer backend for rental asset tracking, "
-        "telemetry, anomaly detection, and demand forecasting."
-    ),
-    version="1.0.0",
-    lifespan=lifespan,
-)
-
-# Allow all origins for hackathon (frontend dev server will be on a different port)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ---------------------------------------------------------------------------
-# Routers
-# ---------------------------------------------------------------------------
-app.include_router(assets.router)
-app.include_router(alerts.router)
-app.include_router(recommendations.router)
-app.include_router(forecasts.router)
-
-
-# ---------------------------------------------------------------------------
-# Admin / utility endpoints
-# ---------------------------------------------------------------------------
-
-from fastapi import Depends
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.seed import reset_database
+
+from app.database import create_database, get_db
+from app.migrations import run_migrations
+from app.seed import reset_database, seed_database, validate_demo_data
+from app.routers import assets, alerts, recommendations, forecasts, telemetry
+from app.routers.alerts import refresh_alerts
+from app.settings import Settings
+from app.observability import install_error_handling, install_request_logging
+from app.services.transactions import DatabaseUnavailable
+from fastapi.responses import JSONResponse
 
 
-@app.post("/admin/seed", tags=["Admin"])
-def admin_seed(db: Session = Depends(get_db)):
-    """Insert seed data if missing. Safe to call multiple times."""
-    return seed_database(db)
+def create_app(settings: Settings | None = None) -> FastAPI:
+    settings = settings if settings is not None else Settings()
+    engine, session_factory = create_database(settings)
+
+    @asynccontextmanager
+    async def lifespan(application: FastAPI):
+        try:
+            if settings.demo_mode:
+                validate_demo_data(settings.data_dir)
+            run_migrations(engine)
+            if settings.demo_mode:
+                with session_factory() as db:
+                    counts = seed_database(db)
+                    if any(counts.values()):
+                        refresh_alerts(db)
+            yield
+        finally:
+            engine.dispose()
+
+    application = FastAPI(
+        title="FleetSignal — Fleet Telemetry and Rental Operations",
+        description=(
+            "Caterpillar dealer backend for rental asset tracking, "
+            "telemetry, anomaly detection, and demand forecasting."
+        ),
+        version="1.0.0", lifespan=lifespan,
+    )
+    application.state.settings = settings
+    application.state.engine = engine
+    application.state.session_factory = session_factory
+    install_error_handling(application)
+
+    @application.exception_handler(RequestValidationError)
+    async def invalid_request(_request, error):
+        # Inputs and validation context can contain non-JSON floats or private payloads.
+        detail = [{key: item[key] for key in ("type", "loc", "msg")} for item in error.errors()]
+        return JSONResponse(status_code=422, content={"detail": detail})
+
+    @application.exception_handler(DatabaseUnavailable)
+    async def unavailable(_request, _error):
+        return JSONResponse(status_code=503, content={"detail": "Database temporarily unavailable; retry safely"},
+                            headers={"Retry-After": "1"})
+
+    application.add_middleware(
+        CORSMiddleware, allow_origins=settings.allowed_origins,
+        allow_credentials=False, allow_methods=["*"], allow_headers=["*"],
+        expose_headers=["X-Request-ID", "Retry-After"],
+    )
+    # Outermost user middleware also sees responses generated by CORS preflights.
+    install_request_logging(application)
+
+    # Copy inclusion routes so creating an ordinary app cannot mutate demo apps.
+    asset_routes = APIRouter()
+    asset_routes.routes.extend(
+        route for route in assets.router.routes
+        if settings.demo_mode or route.path != "/assets/{asset_id}/simulate"
+    )
+    application.include_router(asset_routes)
+    application.include_router(alerts.router)
+    application.include_router(recommendations.router)
+    application.include_router(forecasts.router)
+    application.include_router(telemetry.router)
+
+    if settings.demo_mode:
+        @application.post("/admin/seed", tags=["Admin"])
+        def admin_seed(db: Session = Depends(get_db)):
+            """Insert demo data if missing. Safe to call multiple times."""
+            return seed_database(db)
+
+        @application.post("/admin/reset", tags=["Admin"])
+        def admin_reset(db: Session = Depends(get_db)):
+            """Delete all data and re-seed for the next demo."""
+            counts = reset_database(db)
+            refresh_alerts(db)
+            return {"status": "reset_complete", "seeded": counts}
+
+    @application.get("/health", tags=["Health"])
+    def health():
+        return {"status": "ok", "service": "FleetSignal Backend"}
+
+    @application.get("/ready", tags=["Health"])
+    def ready():
+        try:
+            with engine.connect() as connection:
+                connection.execute(text("SELECT event_id, payload_hash, received_at FROM telemetry LIMIT 0"))
+                connection.execute(text("SELECT last_seen_at FROM alerts LIMIT 0"))
+                revision = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
+                if revision != "0002":
+                    return JSONResponse(status_code=503, content={"detail": "Database not ready"})
+        except SQLAlchemyError:
+            return JSONResponse(status_code=503, content={"detail": "Database not ready"})
+        return {"status": "ready"}
+
+    @application.get("/", tags=["Health"])
+    def root():
+        return {"service": "FleetSignal — Fleet Telemetry and Rental Operations", "docs": "/docs", "redoc": "/redoc"}
+
+    return application
 
 
-@app.post("/admin/reset", tags=["Admin"])
-def admin_reset(db: Session = Depends(get_db)):
-    """
-    DANGER: Delete ALL data and re-seed from scratch.
-    Useful for demo resets between presentations.
-    """
-    counts = reset_database(db)
-    refresh_alerts(db)
-    return {"status": "reset_complete", "seeded": counts}
-
-
-@app.get("/health", tags=["Health"])
-def health():
-    return {"status": "ok", "service": "SRTS Backend"}
-
-
-@app.get("/", tags=["Health"])
-def root():
-    return {
-        "service": "SRTS — Smart Rental Tracking System",
-        "docs": "/docs",
-        "redoc": "/redoc",
-    }
+app = create_app()

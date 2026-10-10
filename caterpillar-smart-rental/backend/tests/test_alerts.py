@@ -83,16 +83,17 @@ class TestAlertRefresh:
         assert resp.status_code == 200
         assert isinstance(resp.json(), list)
 
-    def test_refresh_replaces_stale_alerts(self, client, db_session):
-        """Refresh should clear unresolved alerts and regenerate them."""
+    def test_refresh_preserves_active_alerts(self, client, db_session):
+        """Intentional change: refresh reconciles stable episodes, preserving history."""
         before = client.get("/alerts").json()
         count_before = len(before)
 
         # Refresh again
         client.post("/alerts/refresh")
         after = client.get("/alerts").json()
-        # Count should not double — stale alerts are cleared
+        # Repeated evaluation cannot create another active episode.
         assert len(after) == count_before
+        assert {(a["id"], a["created_at"]) for a in after} == {(a["id"], a["created_at"]) for a in before}
 
     def test_alert_list_filter_by_severity(self, client):
         resp = client.get("/alerts?severity=HIGH")

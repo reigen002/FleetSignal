@@ -19,6 +19,7 @@ Both classes are returned in the same list, sorted CRITICAL → HIGH → MEDIUM 
 The shape is the same RecommendationOut — no new schema needed.
 """
 from fastapi import APIRouter, Depends
+from pathlib import Path
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -210,6 +211,7 @@ def _build_telemetry_recommendations(db: Session) -> list[RecommendationOut]:
 
 def _build_allocation_recommendations(
     all_assets: list[Asset],
+    data_dir: Path | None = None,
 ) -> list[RecommendationOut]:
     """
     For each site × equipment-type segment in the demand supplement that has
@@ -223,12 +225,13 @@ def _build_allocation_recommendations(
     demo_date_str = get_demo_date().isoformat()
     recs: list[RecommendationOut] = []
 
-    for seg in all_supplement_segments():
+    for seg in all_supplement_segments(data_dir):
         row = _site_level_forecast(
             seg["site_id"],
             seg["equipment_type"],
             all_assets,
             demo_date_str,
+            data_dir,
         )
         if row is None:
             continue
@@ -307,7 +310,7 @@ def get_recommendations(db: Session = Depends(get_db)):
 
     anomaly_recs = _build_anomaly_recommendations(assets)
     telemetry_recs = _build_telemetry_recommendations(db)
-    allocation_recs = _build_allocation_recommendations(assets)
+    allocation_recs = _build_allocation_recommendations(assets, db.info.get("data_dir"))
 
     all_recs = anomaly_recs + telemetry_recs + allocation_recs
     all_recs.sort(key=lambda r: _SEVERITY_ORDER.get(r.severity, 99))

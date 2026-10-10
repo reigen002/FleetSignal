@@ -3,7 +3,7 @@ test_seed.py — seed data correctness and reset idempotency.
 """
 import pytest
 from app.models import Asset, Site, Operator
-from app.seed import reset_database, seed_database, ASSETS
+from app.seed import reset_database, seed_database
 
 
 class TestSeedData:

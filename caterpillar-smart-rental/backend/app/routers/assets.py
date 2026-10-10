@@ -28,7 +28,9 @@ from app.schemas import (
     TelemetryOut,
 )
 from app.utilization import calculate_utilization
-from app import simulator as sim
+from app.services import alerts as alert_service
+from app.services.telemetry import AssetNotFound, ingest_simulation
+from app.services.transactions import write_transaction
 
 router = APIRouter(prefix="/assets", tags=["Assets"])
 
@@ -100,7 +102,7 @@ def get_telemetry(
     q = db.query(Telemetry).filter(Telemetry.asset_id == asset_id)
     if scenario:
         q = q.filter(Telemetry.scenario == scenario)
-    return q.order_by(Telemetry.timestamp.desc()).limit(limit).all()
+    return q.order_by(Telemetry.timestamp.desc(), Telemetry.id.desc()).limit(limit).all()
 
 
 # ---------------------------------------------------------------------------
@@ -138,38 +140,40 @@ def checkout_asset(
     Check out an asset.
     Accepts QR code, RFID tag, or manual entry (set identifier_method accordingly).
     """
-    asset = _get_asset_or_404(asset_id, db)
+    with write_transaction(db):
+        asset = _get_asset_or_404(asset_id, db)
 
-    if asset.status == "checked_out":
-        raise HTTPException(
-            status_code=409,
-            detail=f"Asset '{asset_id}' is already checked out.",
+        if asset.status == "checked_out":
+            raise HTTPException(
+                status_code=409,
+                detail=f"Asset '{asset_id}' is already checked out.",
+            )
+
+        # Update asset state
+        asset.status = "checked_out"
+        asset.operator_id = body.operator_id or asset.operator_id
+        asset.site_id = body.site_id or asset.site_id
+        asset.customer_name = body.customer_name or asset.customer_name
+        asset.checkout_date = datetime.now(tz=timezone.utc)
+        if body.expected_return_date:
+            asset.expected_return_date = body.expected_return_date
+
+        # Record the event
+        event = RentalEvent(
+            asset_id=asset_id,
+            event_type="checkout",
+            timestamp=datetime.now(tz=timezone.utc),
+            operator_id=body.operator_id,
+            site_id=body.site_id,
+            customer_name=body.customer_name,
+            expected_return_date=body.expected_return_date,
+            notes=body.notes,
+            performed_by=body.performed_by,
+            identifier_method=body.identifier_method,
         )
-
-    # Update asset state
-    asset.status = "checked_out"
-    asset.operator_id = body.operator_id or asset.operator_id
-    asset.site_id = body.site_id or asset.site_id
-    asset.customer_name = body.customer_name or asset.customer_name
-    asset.checkout_date = datetime.now(tz=timezone.utc)
-    if body.expected_return_date:
-        asset.expected_return_date = body.expected_return_date
-
-    # Record the event
-    event = RentalEvent(
-        asset_id=asset_id,
-        event_type="checkout",
-        timestamp=datetime.now(tz=timezone.utc),
-        operator_id=body.operator_id,
-        site_id=body.site_id,
-        customer_name=body.customer_name,
-        expected_return_date=body.expected_return_date,
-        notes=body.notes,
-        performed_by=body.performed_by,
-        identifier_method=body.identifier_method,
-    )
-    db.add(event)
-    db.commit()
+        db.add(event)
+        db.flush()
+        alert_service.reconcile_asset(db, asset)
     db.refresh(event)
     return event
 
@@ -185,30 +189,32 @@ def checkin_asset(
     db: Session = Depends(get_db),
 ):
     """Return an asset to the dealership."""
-    asset = _get_asset_or_404(asset_id, db)
+    with write_transaction(db):
+        asset = _get_asset_or_404(asset_id, db)
 
-    if asset.status not in ("checked_out", "overdue"):
-        raise HTTPException(
-            status_code=409,
-            detail=f"Asset '{asset_id}' is not currently checked out.",
+        if asset.status not in ("checked_out", "overdue"):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Asset '{asset_id}' is not currently checked out.",
+            )
+
+        asset.status = "available"
+        asset.checkout_date = None
+        asset.expected_return_date = None
+        asset.operator_id = None
+        asset.site_id = None
+
+        event = RentalEvent(
+            asset_id=asset_id,
+            event_type="checkin",
+            timestamp=datetime.now(tz=timezone.utc),
+            notes=body.notes,
+            performed_by=body.performed_by,
+            identifier_method=body.identifier_method,
         )
-
-    asset.status = "available"
-    asset.checkout_date = None
-    asset.expected_return_date = None
-    asset.operator_id = None
-    asset.site_id = None
-
-    event = RentalEvent(
-        asset_id=asset_id,
-        event_type="checkin",
-        timestamp=datetime.now(tz=timezone.utc),
-        notes=body.notes,
-        performed_by=body.performed_by,
-        identifier_method=body.identifier_method,
-    )
-    db.add(event)
-    db.commit()
+        db.add(event)
+        db.flush()
+        alert_service.reconcile_asset(db, asset)
     db.refresh(event)
     return event
 
@@ -229,7 +235,6 @@ def simulate_telemetry(
     Scenarios: normal | engine_overheat | location_mismatch
                seatbelt_violation | high_idle | abnormal_fuel
     """
-    asset = _get_asset_or_404(asset_id, db)
     valid_scenarios = {
         "normal", "engine_overheat", "location_mismatch",
         "seatbelt_violation", "high_idle", "abnormal_fuel",
@@ -239,5 +244,7 @@ def simulate_telemetry(
             status_code=400,
             detail=f"Unknown scenario '{body.scenario}'. Choose from: {sorted(valid_scenarios)}",
         )
-    rows = sim.simulate(db, asset, scenario=body.scenario, readings=body.readings)
-    return rows
+    try:
+        return ingest_simulation(db, asset_id, scenario=body.scenario, readings=body.readings)
+    except AssetNotFound as error:
+        raise HTTPException(404, f"Asset '{asset_id}' not found.") from error

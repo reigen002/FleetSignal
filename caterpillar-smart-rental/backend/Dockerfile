@@ -1,18 +1,21 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /opt/fleetsignal/backend
 
-# Install uv
-RUN pip install uv --no-cache-dir
+RUN pip install uv==0.13.0 --no-cache-dir
 
-# Copy dependency files first for layer caching
-COPY pyproject.toml .
-COPY requirements.txt .
+# Build from the repository root so the same image includes configured demo data.
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
 
-# Install dependencies via uv into the system Python (no venv needed in container)
-RUN uv pip install --system -r requirements.txt
+COPY backend/ ./
+COPY data/ /opt/fleetsignal/data/
+RUN uv sync --frozen --no-dev
 
-COPY . .
+ENV PATH="/opt/fleetsignal/backend/.venv/bin:$PATH" \
+    FLEETSIGNAL_DATA_DIR="/opt/fleetsignal/data" \
+    FLEETSIGNAL_DATABASE_URL="sqlite:////var/lib/fleetsignal/fleetsignal.db" \
+    PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
