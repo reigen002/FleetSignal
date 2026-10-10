@@ -1,4 +1,4 @@
-# Edgerunners-SRTS
+# FleetSignal
 
 Caterpillar Smart Rental Tracking System (SRTS) — a hackathon project for tracking rented Caterpillar equipment: fleet dashboard, anomaly detection, alerts, demand forecasting, and rental lifecycle management.
 
