@@ -2,7 +2,7 @@
 
 Local implementation and verification: **2026-10-10**, branch `feat/fleetsignal-reliability`.
 
-Mandatory implementation slices and local acceptance checks are complete. Submission regression: **262 passed in 34.38s**. Browser walkthrough and clean-setup commands passed; npm audit now reports zero vulnerabilities. See [SUBMISSION_REVIEW.md](SUBMISSION_REVIEW.md) for the review and three-minute demonstration. Locked frontend install/build, fresh/legacy migration, failure/retry, concurrency and Docker persistence checks passed. Hosted CI has not run.
+Mandatory implementation slices and local acceptance checks are complete. Submission regression: **262 passed in 34.38s**. Browser walkthrough and clean-setup commands passed; npm audit now reports zero vulnerabilities. See [SUBMISSION_REVIEW.md](SUBMISSION_REVIEW.md) for the review and three-minute demonstration. Locked frontend install/build, fresh/legacy migration, failure/retry, concurrency and Docker persistence checks passed. Hosted branch and PR checks subsequently passed; publication evidence follows below.
 
 ## Checkout and preserved work
 
@@ -65,7 +65,7 @@ Commands omit the sandbox wrapper. Backend commands ran in `backend/`, frontend 
 
 Final backend verification set `FLEETSIGNAL_DATABASE_URL=sqlite:///D:/Projects/FleetSignal/caterpillar-smart-rental/.tmp/ci-final.db` and `FLEETSIGNAL_DEMO_MODE=false`. Migrations initialized that separate DB before tests; its before/after byte hash matched. Tests use temporary app resources and sentinel files. Host Python 3.11.14, container Python 3.11.17, Node 22.19.0 and Docker Engine29.2.1 were used. Durations are command observations, not application latency/throughput measurements.
 
-Host uv is 0.9.18; Docker and the hosted workflow pin 0.13.0. The hosted workflow itself has not been executed.
+Host uv is 0.9.18; Docker and the hosted workflow pin 0.13.0. Hosted workflow execution is recorded in the publication section below, separately from the preceding local checks.
 
 The Linux command was `docker compose -p fleetsignal-fresh-verification exec -T -e FLEETSIGNAL_DATABASE_URL=sqlite:////tmp/fleetsignal-ci.db -e FLEETSIGNAL_DEMO_MODE=false backend sh -c "uv sync --frozen --extra dev && uv run --frozen python -m app.migrations && uv run --frozen pytest -q -p no:cacheprovider"`. It used the existing disposable container and a separate database; it did not run tests against the demonstration volume. Docker briefly became unavailable during an interruption; restarting it restored the retained service before this check.
 
@@ -80,7 +80,7 @@ Volumes retained: `fleetsignal-verification_fleetsignal_db` and `fleetsignal-fre
 
 ## Observable acceptance matrix
 
-Each row passed locally through the tests or actual demonstrations. Hosted CI remains unexecuted. The subsequent submission browser walkthrough passed, as recorded in [SUBMISSION_REVIEW.md](SUBMISSION_REVIEW.md).
+Each row passed locally through the tests or actual demonstrations. Subsequent hosted CI and browser results are recorded separately below and in [SUBMISSION_REVIEW.md](SUBMISSION_REVIEW.md).
 
 | Required check | Observable evidence |
 |---|---|
@@ -120,9 +120,28 @@ Missing pytest/Node, a stopped Docker daemon and sandbox npm-cache access were r
 
 The initial audit reported one high advisory in transitive development dependency **source-map-js 1.2.1**: [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q), affecting `>=1.0.0 <1.2.2`. Submission review verified both parents accept `^1.2.1` and updated only the lock entry to patched **1.2.2**, preserving all pre-existing metadata removals. Reinstalled dependencies, `npm audit --json` and the frontend build passed; audit reports **zero vulnerabilities**. The existing frontend >500 kB bundle warning remains.
 
-Deferred: PostgreSQL, workers/queues, cloud deployment, streaming, full authentication/authorization, notifications, forecasting/ML changes, load tests and extensive metrics. Hosted GitHub Actions was not executed; local workflow commands, clean setup and the complete browser walkthrough were executed.
+Deferred: PostgreSQL, workers/queues, cloud deployment, streaming, full authentication/authorization, notifications, forecasting/ML changes, load tests and extensive metrics. Local workflow commands, clean setup, the complete browser walkthrough and subsequent hosted GitHub Actions were executed.
 
 SQLite remains single-writer. Alert work is synchronous; the last 20 count window has no time expiry without new readings. L-prefixed faults indicate location mismatch, not GPS geofencing. Future occurrences are allowed for synthetic scenarios. The UI reloads rather than streams. Demo gating is not authentication; real-data deployment needs additional access controls. Exception rollback and app/container restarts were demonstrated; no process-kill recovery, enterprise-scale or distributed exactly-once claim is made.
+
+## Publication and hosted verification
+
+Publication was separately authorized after the submission review. Changes were committed on `feat/fleetsignal-reliability` and submitted as [PR #1](https://github.com/reigen002/FleetSignal/pull/1). The canonical repository was already named FleetSignal upstream; publication did not rename it or deploy an application.
+
+- `8457df5`: reviewed implementation, excluding databases, temporary files and secrets.
+- `7b6822d`: integrate current upstream main, preserve its CSV/intelligence document, and retain the CSV as the seed source of truth. Integrated local regression: **262 passed in 35.62s**.
+- `838a0d6`: correct the workflow's job-level database environment. The [first run](https://github.com/reigen002/FleetSignal/actions/runs/38059058674) failed validation before starting any jobs because `runner.temp` is unavailable in job-level `env`. An explicit `/tmp/fleetsignal-ci.db` on the disposable Linux runner replaces that expression; no test was counted as passing in the failed run.
+
+Both the [branch push run](https://github.com/reigen002/FleetSignal/actions/runs/38059905107) and [PR test-merge run](https://github.com/reigen002/FleetSignal/actions/runs/38059906165) completed successfully for `838a0d6`. The PR run executed:
+
+| Hosted check | Observed result |
+|---|---|
+| Backend locked install and migrations | Exit 0, Python **3.11.17**, uv **0.13.0**, demo mode false and separate `/tmp` SQLite file |
+| `uv run --frozen pytest -q -p no:cacheprovider` | **262 passed in 22.95s** |
+| `npm ci` | Exit 0, **zero vulnerabilities**, Node **22.19.0**, npm **10.9.3** |
+| `npm run build` | Exit 0, **660 modules**, **551ms**; existing >500 kB bundle warning |
+
+These timings describe executed commands, not application performance. Hosted tests/builds do not constitute cloud deployment. After PR integration, use the repository's default-branch code link on a resume: [FleetSignal](https://github.com/reigen002/FleetSignal). PR status and Actions record the current integration/check status.
 
 ## Demonstrated resume bullets
 

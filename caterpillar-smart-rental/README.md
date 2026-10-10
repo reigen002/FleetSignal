@@ -150,7 +150,7 @@ Submission regression: **262 passed in 34.38s**, and **262 in 37.71s** in a clea
 
 The disposable rollback/retry demonstration and fresh Docker ingestion, lock recovery and container recreation checks passed. These establish local operation and named-volume persistence; no cloud deployment was performed.
 
-[SUBMISSION_REVIEW.md](docs/SUBMISSION_REVIEW.md) records the final review, browser/clean-setup results and a three-minute demonstration. [COMPLETION_REPORT.md](docs/COMPLETION_REPORT.md) retains the implementation commands, test counts, Docker evidence and limitations. A workflow file alone does not establish a successful hosted CI run. The existing frontend bundle warning above 500 kB remains.
+[SUBMISSION_REVIEW.md](docs/SUBMISSION_REVIEW.md) records the final review, browser/clean-setup results and a three-minute demonstration. [COMPLETION_REPORT.md](docs/COMPLETION_REPORT.md) retains the implementation commands, test counts, Docker evidence and limitations. [Hosted PR verification](https://github.com/reigen002/FleetSignal/actions/runs/38059906165) passed locked installation, migrations, **262 tests in 22.95s**, and the frontend build (660 modules, 551ms). The existing frontend bundle warning above 500 kB remains.
 
 ## Historical documents
 

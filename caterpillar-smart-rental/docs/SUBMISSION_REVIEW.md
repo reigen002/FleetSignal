@@ -49,7 +49,7 @@ The advisory [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-
 
 SQLite remains single-writer; reconciliation is synchronous and the latest-20 alert window has no time expiry. Location mismatch uses synthetic fault labels, rather than implemented GPS geofencing. The interface reloads state; no streaming or continuous device integration was added. Demo mode is not authentication. The existing bundle warning above 500 kB remains.
 
-Hosted GitHub Actions, cloud deployment, load testing and process-kill recovery were not executed. The Docker work concerns local containers and named-volume persistence. Installation used available registry/cache resources; an offline setup was not tested.
+At submission review, hosted GitHub Actions had not executed. Publication subsequently ran the hosted tests/builds successfully; see [the publication evidence](COMPLETION_REPORT.md#publication-and-hosted-verification). Cloud deployment, load testing and process-kill recovery remain unexecuted. The Docker work concerns local containers and named-volume persistence. Installation used available registry/cache resources; an offline setup was not tested.
 
 ## Three-minute demonstration
 
@@ -69,4 +69,4 @@ uv run --frozen python scripts/demo_reliability.py 2> demo-reliability.log
 
 The redirected server traceback is expected failure-injection evidence. There is no exposed crash endpoint. Keep setup/build time outside the three-minute presentation; the timings above are a presentation script, not a performance benchmark.
 
-Review summary: Standards **0 unresolved** (one P3 corrected); Spec **0 unresolved** (one P2 and one P3 corrected). No remaining local verification blocker; hosted CI and the explicitly deferred checks remain unexecuted.
+Review summary: Standards **0 unresolved** (one P3 corrected); Spec **0 unresolved** (one P2 and one P3 corrected). No remaining local verification blocker. Hosted CI subsequently passed during publication; the explicitly deferred checks remain unexecuted.

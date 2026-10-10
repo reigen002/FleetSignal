@@ -52,3 +52,7 @@ Host uv is 0.9.18; Docker and CI pin 0.13.0. At implementation review, source wa
 ## Subsequent submission review
 
 The final submission review supersedes the earlier advisory and unexecuted-browser entries above: source-map-js is patched to 1.2.2, npm audit reports zero vulnerabilities, 13 real-browser checks passed, and clean README installs/startups/builds passed. Pre-existing lock metadata removals remain intact. Backend regression passed again: 262 tests in 34.38s; the clean environment passed 262 in 37.71s with its normal database hash unchanged. Docker Desktop was restored; a fresh local project passed ingestion, lock exhaustion/retry and container recreation with its named volume retained. See [SUBMISSION_REVIEW.md](SUBMISSION_REVIEW.md) for current evidence and the three-minute demonstration.
+
+## Subsequent publication
+
+Publication was authorized after review. The branch was committed and pushed, current upstream main was integrated with its CSV/intelligence document preserved, and [PR #1](https://github.com/reigen002/FleetSignal/pull/1) opened. The first hosted run failed workflow validation before any jobs; a one-line database environment correction fixed it. Hosted branch and PR runs then passed, including **262 tests in 22.95s**, migrations, locked installation and the frontend build. See [COMPLETION_REPORT.md](COMPLETION_REPORT.md#publication-and-hosted-verification) for run links and exact evidence. No cloud deployment or repository rename was performed.
