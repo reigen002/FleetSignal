@@ -31,8 +31,8 @@ export default function App() {
           <span className="flex h-6 w-6 items-center justify-center bg-signal-high text-signal-high-ink">
             <IconTruck className="text-[13px]" />
           </span>
-          <span className="text-sm font-bold tracking-wide text-ink">SRTS</span>
-          <span className="hidden text-[13px] text-ink-faint sm:inline">Smart Rental Tracking · Dealer Ops</span>
+          <span className="text-sm font-bold tracking-wide text-ink">FleetSignal</span>
+          <span className="hidden text-[13px] text-ink-faint sm:inline">Fleet Telemetry and Rental Operations</span>
         </Link>
         <div className="flex items-center gap-2">
           {demoNow && (

@@ -1,207 +1,159 @@
-# SRTS — Smart Rental Tracking System
+# FleetSignal — Fleet Telemetry and Rental Operations
 
-Caterpillar dealer backend for rental asset tracking, telemetry, anomaly detection, and demand forecasting.
+FleetSignal gives a Caterpillar dealer a fleet dashboard, explainable alerts, rental lifecycle tracking, and demand allocation recommendations. Its backend accepts identified telemetry events, reconciles alerts in the same SQLite transaction, and makes retries safe when a sender loses the response.
 
----
+The seven-asset demonstration preserves the original SRTS story: recover the idle excavator **EQX1007** for S003, review overdue EQX1002, and inspect live safety telemetry on EQX1004. The dataset and forecast are historical synthetic examples, evaluated at the fixed business clock **2025-05-12**; they are not current fleet observations or validated savings estimates.
 
-## Stack
+## Stack and scope
 
-| Layer | Tech |
+| Layer | Technology |
 |---|---|
-| Runtime | Python 3.11 |
-| Package manager | **uv** |
-| API | FastAPI |
-| DB | SQLite (via SQLAlchemy 2.0) |
-| Server | Uvicorn |
+| Backend | Python 3.11, FastAPI, SQLAlchemy 2.0, Alembic 1.13.2 |
+| Storage | File-backed SQLite; one writer, finite busy timeout |
+| Dependency management | uv 0.13.0 and `backend/uv.lock` |
+| Frontend | React, Vite, existing charts and maps; Node 22.19.0 |
+| Local packaging | Docker Compose with persistent named SQLite volume |
 
-SQLite is used for hackathon simplicity — zero external infrastructure required.
+This is a local reliability project. It has synchronous alert evaluation and request-driven UI refresh. Cloud deployment, PostgreSQL, streaming, authentication, machine learning, and production scale are outside this implementation.
 
----
+## Local backend
 
-## Quick Start (local)
+From this project directory, enter `backend`. Install uv and Python 3.11 if needed, then use the committed lockfile:
 
 ```bash
-# From the backend directory
-cd caterpillar-smart-rental/backend
-
-# Install uv (once, if not already installed)
-# See https://docs.astral.sh/uv/getting-started/installation/
-
-# Create venv and install dependencies
-uv sync
-
-# Run (auto-seeds DB on first start)
-uv run uvicorn app.main:app --reload
+cd backend
+uv sync --frozen --extra dev
+uv run --frozen python -m app.migrations
+uv run --frozen uvicorn app.main:app --reload
 ```
 
-API available at <http://localhost:8000>
-Swagger UI: <http://localhost:8000/docs>
+Startup runs the same validated migrations automatically. `GET http://localhost:8000/health` returns `{"status":"ok","service":"FleetSignal Backend"}`. `GET /ready` verifies database connectivity and the required schema revision. OpenAPI is at <http://localhost:8000/docs>.
 
----
+**Default mode has no demo seed.** `/admin/seed`, `/admin/reset`, and `/assets/{asset_id}/simulate` are absent unless `FLEETSIGNAL_DEMO_MODE=true`. An empty default database therefore has no assets. Existing configured database contents remain available.
 
-## Frontend Quick Start (local)
+To run the historical seven-asset demo, set the environment variable before starting the backend:
 
 ```bash
-# From the frontend directory (in a second terminal — backend must be running)
-cd caterpillar-smart-rental/frontend
+# POSIX shell, from backend/
+FLEETSIGNAL_DEMO_MODE=true uv run --frozen uvicorn app.main:app --reload
+```
 
-npm install
+```powershell
+# PowerShell, from backend/
+$env:FLEETSIGNAL_DEMO_MODE = 'true'
+uv run --frozen uvicorn app.main:app --reload
+```
+
+From the project root, the equivalent server command is:
+
+```bash
+uv run --project backend --frozen uvicorn app.main:app --app-dir backend --reload
+```
+
+Both working directories resolve the same absolute defaults: `<project>/.fleetsignal/fleetsignal.db` and `<project>/data`. Importing the app does not create or modify the database; startup owns migration and optional seed work. The original `backend/srts.db` is not selected by default.
+
+## Configuration
+
+| Variable | Default / requirement |
+|---|---|
+| `FLEETSIGNAL_DATABASE_URL` | Absolute file SQLite URL for `<project>/.fleetsignal/fleetsignal.db` |
+| `FLEETSIGNAL_DATA_DIR` | Absolute `<project>/data` directory |
+| `FLEETSIGNAL_DEMO_MODE` | `false`; opt in to seed/reset/simulation |
+| `FLEETSIGNAL_SQLITE_BUSY_TIMEOUT_MS` | `5000`; positive, at most `60000` |
+| `FLEETSIGNAL_ALLOWED_ORIGINS` | Explicit localhost/127.0.0.1 origins on 5173 and 4173, JSON list |
+| `SRTS_DEMO_DATE` | Preserved business-clock override; default `2025-05-12` |
+
+Example SQLite URLs: `sqlite:///D:/Projects/FleetSignal/caterpillar-smart-rental/.fleetsignal/fleetsignal.db` on Windows, `sqlite:////absolute/path/fleetsignal.db` on POSIX. Relative paths, memory SQLite, and other database engines are rejected. Every SQLite connection enables foreign keys and a finite busy timeout; WAL is not enabled by this project.
+
+`.env.example` documents these values; the backend does not automatically load `.env`. When supplying absolute-path examples, replace them with your own paths. You may copy it to project `.env`, select demo mode there, and explicitly load it from `backend/`:
+
+```bash
+uv run --frozen uvicorn app.main:app --reload --env-file ../.env
+```
+
+## Frontend
+
+In another terminal, from the project directory:
+
+```bash
+cd frontend
+npm ci
 npm run dev
 ```
 
-App available at <http://localhost:5173> — it talks to the backend at
-`http://localhost:8000` by default (real API mode, no mock data). To point it
-at a different backend URL or force mock mode, copy `.env.local.example` to
-`.env.local` and see the comments inside.
+Use Node **22.19.0**. The app opens at <http://localhost:5173> and uses the real API at <http://localhost:8000> by default. Enable backend demo mode for the existing demo controls and fleet story. `frontend/.env.local.example` documents `VITE_API_BASE` and the separately selected `VITE_API_MODE=mock`; errors do not switch to mock data.
 
----
+Simulation, check-in, and checkout return after the backend has committed their alert effects. The UI reloads asset/telemetry state afterward. API error messages include a validated request ID when provided by the backend.
 
 ## Docker
 
-```bash
-cd caterpillar-smart-rental
-docker compose up --build
-```
-
----
-
-## Database
-
-SQLite file: `backend/srts.db`  
-Auto-created and seeded on first startup.
-
-**Reset to clean seed data:**
+From the project directory:
 
 ```bash
-curl -X POST http://localhost:8000/admin/reset
+docker compose up --build -d
 ```
 
----
+The supplied Compose configuration explicitly enables demo mode. The backend reads data from `/opt/fleetsignal/data` and stores SQLite at `sqlite:////var/lib/fleetsignal/fleetsignal.db`, mounted on the named `fleetsignal_db` volume. Container recreation retains that file; deleting the volume removes its data. For ordinary operation, change `FLEETSIGNAL_DEMO_MODE` to `false` before starting a fresh deployment.
 
-## Key Endpoints
+## External telemetry
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/assets` | List all assets |
-| GET | `/assets/{id}` | Asset detail + utilization |
-| GET | `/assets/{id}/telemetry` | Sensor readings |
-| GET | `/assets/{id}/events` | Lifecycle events |
-| POST | `/assets/{id}/checkout` | Check out asset |
-| POST | `/assets/{id}/checkin` | Return asset |
-| POST | `/assets/{id}/simulate` | Run telemetry demo scenario |
-| GET | `/alerts` | Active anomaly alerts |
-| POST | `/alerts/refresh` | Re-run anomaly detection |
-| GET | `/recommendations` | Actionable recommendations |
-| GET | `/forecasts` | Demand forecasting |
-| POST | `/admin/reset` | Reset to seed data |
+Send an event for an existing asset. Keep the same global event ID and semantic payload for retries:
 
-See [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md) for full contract.
+```bash
+curl -i -X POST http://localhost:8000/telemetry/events \
+  -H 'Content-Type: application/json' \
+  -H 'X-Request-ID: demo-ingest-1' \
+  -d '{"event_id":"device-EQX1004-0001","asset_id":"EQX1004","timestamp":"2025-05-12T10:00:00Z","engine_temp_c":115,"seatbelt_on":false}'
+```
 
----
+A new event returns **201**; the same validated payload returns **200** with `duplicate=true` and the same telemetry ID. Changed content under that ID returns **409**. Invalid input is **422**, unknown asset **404**, and database contention **503** with `Retry-After: 1`. All responses carry `X-Request-ID`; unexpected errors return a safe **500** response.
 
-## Demo Scenarios
+One successful transaction stores telemetry and evaluates each alert condition independently. Active episodes retain their ID and creation time. A duplicate does not evaluate alerts or advance their timestamps. `/alerts/refresh` remains an explicit recovery scan; client actions do not depend on it.
 
-Trigger realistic telemetry with `POST /assets/{id}/simulate`:
+## Migrations and existing databases
 
-| Scenario | What it simulates |
-|---|---|
-| `engine_overheat` | Temp rises above 110°C |
-| `location_mismatch` | GPS drifts outside site boundary |
-| `seatbelt_violation` | Seatbelt off during operation |
-| `high_idle` | Engine idle, no productive use |
-| `abnormal_fuel` | Fuel burn 2–3× baseline |
-| `normal` | Healthy baseline readings |
+Use `uv run --frozen python -m app.migrations` from `backend/`. A fresh database upgrades to revision `0002`. An unversioned legacy database is adopted only after validation against the frozen original six-table schema. Revision `0002` preserves legacy telemetry with null event identity/receipt fields and resolves duplicate active alerts while retaining their history; the earliest `created_at`, then lowest ID, remains active.
 
----
+Back up a legacy file before explicitly configuring its absolute URL for adoption. Unknown schemas are refused without changes; never manually stamp an unknown database to bypass validation. The user's original `backend/srts.db` is not automatically migrated.
 
-## Manual Testing Walkthrough
+## Demonstration and checks
 
-With the backend on :8000 and frontend on :5173 both running, this walks
-through every core capability by hand. Each step names what you should see —
-if it doesn't match, something's broken.
+See [the five-minute demo](docs/DEMO_FLOW.md), [API contract](docs/API_CONTRACT.md), and [reliability design and limits](docs/RELIABILITY.md).
 
-1. **Health check.**
-   `curl http://localhost:8000/health` → `{"status":"ok","service":"SRTS Backend"}`.
+From `backend/`:
 
-2. **Reset to a clean state.**
-   Click **Reset Demo** in the app header (or `POST /admin/reset`). Confirm:
-   7 assets, EQX1002 shown as `checked_out` with no site/operator, alerts
-   regenerated.
+```bash
+uv sync --frozen --extra dev
+uv run --frozen pytest -q -p no:cacheprovider
+uv run --frozen python scripts/demo_reliability.py
+```
 
-3. **Fleet dashboard** (`/`).
-   - All 7 assets appear in the fleet table, sorted by severity.
-   - KPI row shows fleet size, assets needing attention, HIGH alerts, avg. utilization.
-   - **EQX1002** is the hero panel at the top — CRITICAL, overdue.
-   - Map renders all sites; no console errors.
+The reliability demonstration uses an isolated temporary file database. It shows rollback after an injected exception following a flush, then retry, duplicate, conflict, and retry after a lost response. It does not kill a process or establish process-crash durability.
 
-4. **EQX1002 detail** (click the row, or go to `/asset/EQX1002`).
-   Confirm: type `Cater`, status `Overdue`/`CRITICAL`, Site/Operator both
-   `Unassigned`, 0 engine hrs/day, 11 idle hrs/day, 0% utilization,
-   43 days overdue, 4 anomaly cards each with evidence + "why it matters",
-   and a recommendation panel with a coherent, data-backed action.
+For an explicitly disposable Docker verification project, start Compose from the project directory, then run the script from `backend/`:
 
-5. **Telemetry scenarios** (on `/asset/EQX1004`, the asset still "out" at the
-   demo clock).
-   Pick a scenario from the dropdown and click **Run Scenario**:
-   - `engine_overheat` → engine temp >105°C, CRITICAL anomaly, coaching
-     checklist opens, a "predictive maintenance" recommendation appears.
-   - `seatbelt_violation` → seatbelt reads OFF, HIGH anomaly + recommendation.
-   - `location_mismatch` → asset shown outside its registered site boundary.
-   - `high_idle` / `abnormal_fuel` — secondary/optional scenarios.
+```bash
+docker compose -p fleetsignal-verification up --build -d
+```
 
-6. **Recommendations.**
-   On the dashboard, confirm two distinct kinds of recommendation appear:
-   anomaly-driven (EQX1002, EQX1007 — missing assignment / zero productive
-   use) and forecast-driven allocation (see next step). EQX1002's recommendation
-   should stay coherent even with multiple stacked conditions.
+```bash
+uv run --frozen python scripts/verify_docker.py --project fleetsignal-verification --base-url http://localhost:8000
+```
 
-7. **Forecast → supply → allocation** (dashboard forecast panel, or
-   `GET /forecasts?equipment_type=Excavator&site_id=S003`).
-   Confirm the S003/Excavator panel shows: history `2,2,2,3,3,3` → forecast
-   `~3`, known supply `1 available + 1 recoverable = 2`, projected gap `1`,
-   and the action **"Recover EQX1007 and redeploy to S003."** — phrased as
-   reducing the gap, not fully solving it.
+This verification recreates the named local project's backend container and checks that its data persists. Use that project only for disposable verification.
 
-8. **Check-out / check-in** (use EQX1006, which starts `Returned`).
-   - **Check Out**: fill site + operator + expected return date → status
-     flips to `Rented`, a CHECKOUT event appears on the Lifecycle Timeline.
-   - **Check In**: status flips back to `Returned`, a CHECKIN event is
-     added, and — importantly — **no new alerts appear** (a returned asset
-     having no active site/operator is not an anomaly).
-   - Repeating an invalid action (e.g. checking in an already-returned
-     asset) should fail cleanly (`409`) without breaking the UI.
+From `frontend/`, `npm ci` then `npm run build` builds the existing interface. The CI workflow runs locked installs, migrations, backend tests, and the frontend build with Python 3.11 and Node 22.19.0; it needs no external API credentials.
 
-9. **Lifecycle timeline sanity check.**
-   EQX1002 → `Checked out` (2025-03-01) then `Flagged overdue` (2025-03-30),
-   no check-in. EQX1005 or EQX1003 → a clean `Checked out` → `Returned to
-   dealership` pair. Every asset should have a non-empty timeline on a fresh
-   reset — this is generated from the official dataset at seed time, not
-   just from live check-in/out actions.
+### Verified results
 
-10. **Reset reproducibility.**
-    After doing steps 5–8, click **Reset Demo** again and re-check step 2 —
-    the fleet should return to *exactly* the original seeded state (same
-    alert count, same EQX1002 fields), with no manual DB editing needed.
+Submission regression: **262 passed in 34.38s**, and **262 in 37.71s** in a clean environment whose configured database hash remained unchanged. The documented setup commands and **13 browser checks** passed. Locked frontend installation and production build passed (660 modules); the targeted dependency fix leaves `npm audit` reporting **zero vulnerabilities**.
 
-11. **Build/test sanity** (optional, confirms the code itself is healthy):
+The disposable rollback/retry demonstration and fresh Docker ingestion, lock recovery and container recreation checks passed. These establish local operation and named-volume persistence; no cloud deployment was performed.
 
-    ```bash
-    cd caterpillar-smart-rental/backend && uv sync --extra dev && uv run pytest -q
-    cd caterpillar-smart-rental/frontend && npm run build
-    ```
+[SUBMISSION_REVIEW.md](docs/SUBMISSION_REVIEW.md) records the final review, browser/clean-setup results and a three-minute demonstration. [COMPLETION_REPORT.md](docs/COMPLETION_REPORT.md) retains the implementation commands, test counts, Docker evidence and limitations. A workflow file alone does not establish a successful hosted CI run. The existing frontend bundle warning above 500 kB remains.
 
-    Expect `95 passed` and a clean Vite build.
+## Historical documents
 
----
+[HACKATHON_SPEC.md](docs/HACKATHON_SPEC.md) and [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) preserve the original hackathon requirements and design. Their original SRTS branding, setup assumptions, and scope are historical; use this README and the active API/reliability documentation for current behavior.
 
-## Utilization Methodology
-
-Two metrics are surfaced (not a composite "magic number"):
-
-- **Productive ratio** = `engine_hrs / (engine_hrs + idle_hrs) × 100`  
-  *How much of running time was productive?*
-
-- **Shift utilization** = `engine_hrs / (operating_days × 8h) × 100`  
-  *How much of available shift capacity was used?*
-
-Both include a plain-English label so the frontend can explain the number to end users.
+Utilization still reports two explainable measures: productive ratio `engine / (engine + idle) × 100`, and shift utilization `engine / (operating days × 8 hours) × 100`, capped at 100. Telemetry ingestion preserves the existing rental metrics, forecast method, recommendation logic, and business clock.

@@ -22,7 +22,7 @@ function ScenarioRunner({ onRun }) {
     setResult(null);
     try {
       await onRun(scenario);
-      setResult({ ok: true, text: "Scenario run — alerts refreshed." });
+      setResult({ ok: true, text: "Scenario complete — readings and alerts updated." });
     } catch (e) {
       setResult({ ok: false, text: e.message || "Simulation failed." });
     } finally {
@@ -38,7 +38,7 @@ function ScenarioRunner({ onRun }) {
       <button onClick={run} disabled={running} className="border border-hairline-strong px-2.5 py-1.5 text-[13px] text-ink hover:bg-panel-raised disabled:opacity-60">
         {running ? "Running…" : "Run Scenario"}
       </button>
-      <span className="text-[11px] text-ink-faint">Posts /simulate, then /alerts/refresh, then reloads this asset.</span>
+      <span className="text-[11px] text-ink-faint">Generates demo readings and updates this asset's alerts.</span>
       {result && <span className={`text-[12px] ${result.ok ? "text-signal-healthy" : "text-signal-high"}`}>{result.text}</span>}
     </div>
   );

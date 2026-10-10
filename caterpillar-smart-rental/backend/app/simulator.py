@@ -15,12 +15,14 @@ high_idle           — idle_time_hours grows each reading (no engine use)
 abnormal_fuel       — fuel_consumption_lph spikes 2-3× expected baseline
 """
 import math
+from uuid import uuid4
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.models import Asset, Telemetry
+from app.models import Asset
+from app.schemas import TelemetryEventIn
 
 # Normal operation baselines
 NORMAL_ENGINE_TEMP = 85.0       # °C
@@ -49,15 +51,14 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
-def simulate(
-    db: Session,
+def generate_readings(
     asset: Asset,
     scenario: str,
     readings: int = 10,
-) -> list[Telemetry]:
+) -> list[TelemetryEventIn]:
     """
-    Generate `readings` Telemetry rows for `asset` under `scenario`.
-    Rows are committed to the DB and returned.
+    Generate validated `readings` events for `asset` under `scenario`.
+    This function generates values only; the ingestion service owns persistence.
     """
     scenario = scenario.lower()
     base_lat, base_lon = _site_coords(asset)
@@ -65,7 +66,8 @@ def simulate(
     cumulative_engine_hrs = asset.engine_hrs_per_day * asset.operating_days
     cumulative_idle_hrs = asset.idle_hrs_per_day * asset.operating_days
 
-    rows: list[Telemetry] = []
+    rows: list[TelemetryEventIn] = []
+    run_id = uuid4().hex
 
     for i in range(readings):
         ts = base_time + timedelta(minutes=i * 15)  # 15-min intervals
@@ -126,7 +128,8 @@ def simulate(
                 fault_code = "F001"
                 fault_desc = f"Fuel consumption {fuel_lph:.1f} L/h — {fuel_lph/NORMAL_FUEL_LPH:.1f}× baseline"
 
-        row = Telemetry(
+        row = TelemetryEventIn(
+            event_id=f"sim-{run_id}-{i}",
             asset_id=asset.id,
             timestamp=ts,
             latitude=round(lat, 6),
@@ -139,12 +142,13 @@ def simulate(
             seatbelt_on=seatbelt,
             fault_code=fault_code,
             fault_description=fault_desc,
-            scenario=scenario,
         )
-        db.add(row)
         rows.append(row)
 
-    db.commit()
-    for r in rows:
-        db.refresh(r)
     return rows
+
+
+def simulate(db: Session, asset: Asset, scenario: str, readings: int = 10):
+    """Compatibility entrypoint for trusted demo callers; the batch is atomic."""
+    from app.services.telemetry import ingest_simulation
+    return ingest_simulation(db, asset.id, scenario, readings)

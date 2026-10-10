@@ -31,7 +31,9 @@ export function CheckInOutModal({ mode, assetId, onClose, onSubmit }) {
         await onSubmit({ notes });
       }
     } catch (err) {
-      setError(err.status === 409 ? "This asset's state changed — reload and try again." : err.message || "Request failed.");
+      setError(err.status === 409
+        ? `This asset's state changed — reload and try again.${err.requestId ? ` (Request ID: ${err.requestId})` : ""}`
+        : err.message || "Request failed.");
       setSubmitting(false);
     }
   }

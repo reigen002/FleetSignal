@@ -7,3 +7,10 @@ backend/*.db-journal
 
 # graphify knowledge graph output (regenerated locally via /graphify)
 graphify-out/
+
+# Local verification tools and disposable databases
+.tools/
+.tmp/
+.fleetsignal/
+*.db-wal
+*.db-shm

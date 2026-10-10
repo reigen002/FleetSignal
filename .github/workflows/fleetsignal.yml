@@ -1,0 +1,51 @@
+name: FleetSignal
+
+on:
+  push:
+    paths:
+      - 'caterpillar-smart-rental/**'
+      - '.github/workflows/fleetsignal.yml'
+  pull_request:
+    paths:
+      - 'caterpillar-smart-rental/**'
+      - '.github/workflows/fleetsignal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: caterpillar-smart-rental/backend
+    env:
+      FLEETSIGNAL_DATABASE_URL: sqlite:///${{ runner.temp }}/fleetsignal-ci.db
+      FLEETSIGNAL_DEMO_MODE: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+      - run: uv sync --frozen --extra dev
+      - run: uv run --frozen python -m app.migrations
+      - run: uv run --frozen pytest -q -p no:cacheprovider
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: caterpillar-smart-rental/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+          cache-dependency-path: caterpillar-smart-rental/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build

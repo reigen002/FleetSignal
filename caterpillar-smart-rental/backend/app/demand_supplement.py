@@ -1,93 +1,39 @@
-"""
-demand_supplement.py
-
-Loads the supplementary synthetic demand history from
-  data/scenarios/demand_history_supplement.json
-
-This file is repo-relative to the backend package root.  The loader walks
-upward from this file's location to find it, so it works whether the server
-is started from the repo root, from caterpillar-smart-rental/, or from
-caterpillar-smart-rental/backend/.
-
-The data is intentionally separate from the official seven asset records —
-it represents synthetic historical demand at the site × equipment-type level
-and must NOT be mixed into or derived from the asset rows.
-"""
+"""Load synthetic demand from a configured directory without process-wide state."""
 import json
-import os
-from typing import Optional
+from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Path resolution — find the JSON no matter where the server is launched from
-# ---------------------------------------------------------------------------
-
-def _find_supplement_path() -> Optional[str]:
-    """
-    Walk upward from this file's directory looking for
-    data/scenarios/demand_history_supplement.json.
-    Returns the first match, or None if not found.
-    """
-    here = os.path.dirname(os.path.abspath(__file__))
-    candidate = here
-    for _ in range(6):  # at most 6 levels up
-        path = os.path.join(candidate, "data", "scenarios", "demand_history_supplement.json")
-        if os.path.isfile(path):
-            return path
-        parent = os.path.dirname(candidate)
-        if parent == candidate:
-            break
-        candidate = parent
-    return None
+from app.settings import Settings
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
-_SUPPLEMENT_CACHE: Optional[dict] = None
-
-
-def _load_raw() -> dict:
-    global _SUPPLEMENT_CACHE
-    if _SUPPLEMENT_CACHE is not None:
-        return _SUPPLEMENT_CACHE
-    path = _find_supplement_path()
-    if path is None:
-        _SUPPLEMENT_CACHE = {"demand_history": []}
-        return _SUPPLEMENT_CACHE
-    with open(path, encoding="utf-8") as f:
-        _SUPPLEMENT_CACHE = json.load(f)
-    return _SUPPLEMENT_CACHE
+def _load_raw(data_dir: Path | None = None) -> dict:
+    directory = Path(data_dir) if data_dir is not None else Settings().data_dir
+    path = directory / "scenarios" / "demand_history_supplement.json"
+    # Ordinary deployments can start without optional demo demand history.
+    # Demo startup validates this file before opening its database.
+    if not path.is_file():
+        return {"demand_history": []}
+    try:
+        with path.open(encoding="utf-8") as source:
+            return json.load(source)
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"Invalid demand history JSON: {path}") from error
 
 
-def get_demand_history(site_id: str, equipment_type: str) -> list[dict]:
-    """
-    Return the demand history periods for a (site_id, equipment_type) pair.
-
-    Each period dict has keys: "period" (str YYYY-MM), "count" (int).
-    Returns an empty list if no data found.
-    """
-    data = _load_raw()
+def get_demand_history(site_id: str, equipment_type: str, data_dir: Path | None = None) -> list[dict]:
+    """Return periods for a site and equipment type from this data directory."""
+    data = _load_raw(data_dir)
     for entry in data.get("demand_history", []):
-        if (
-            entry.get("site_id") == site_id
-            and entry.get("equipment_type") == equipment_type
-        ):
+        if entry.get("site_id") == site_id and entry.get("equipment_type") == equipment_type:
             return list(entry.get("periods", []))
     return []
 
 
-def all_supplement_segments() -> list[dict]:
-    """
-    Return all (site_id, equipment_type) segments in the supplement file.
-    Each element has keys: site_id, equipment_type, periods[].
-    """
-    data = _load_raw()
+def all_supplement_segments(data_dir: Path | None = None) -> list[dict]:
+    """Return every site and equipment segment from this data directory."""
     return [
         {
-            "site_id": entry["site_id"],
-            "equipment_type": entry["equipment_type"],
+            "site_id": entry["site_id"], "equipment_type": entry["equipment_type"],
             "periods": list(entry.get("periods", [])),
         }
-        for entry in data.get("demand_history", [])
+        for entry in _load_raw(data_dir).get("demand_history", [])
     ]

@@ -1,12 +1,16 @@
 """
 Seed data — the official dataset from the hackathon spec.
-Run via: POST /admin/seed  or automatically on first startup.
+In explicit demo mode: POST /admin/seed or automatic seeding on first startup.
 
 NULL site/operator values are intentional anomalies and preserved exactly.
 """
-from datetime import datetime, timezone
+import csv
+import json
+from datetime import datetime
+from pathlib import Path
 from sqlalchemy.orm import Session
 from app.models import Alert, Asset, Site, Operator, RentalEvent, Telemetry
+from app.settings import Settings
 
 
 SITES = [
@@ -25,75 +29,64 @@ OPERATORS = [
     {"id": "OP114", "name": "Carlos Mendoza",    "license_class": "Medium", "contact": "+63-921-0005"},
 ]
 
-# Official seed data — do not alter the NULL site/operator values
-ASSETS = [
-    {
-        "id": "EQX1001", "equipment_type": "Excavator",
-        "site_id": "S003", "operator_id": "OP101",
-        "checkout_date": datetime(2025, 4, 1,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 4, 16, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 1.5, "idle_hrs_per_day": 10.0, "operating_days": 15,
-        "status": "available", "customer_name": "ABC Construction",
-        "qr_code": "QR-EQX1001", "rfid_tag": "RFID-EQX1001",
-    },
-    {
-        "id": "EQX1002", "equipment_type": "Cater",
-        "site_id": None,           "operator_id": None,       # intentional anomaly
-        "checkout_date": datetime(2025, 3, 1,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 3, 30, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 0.0, "idle_hrs_per_day": 11.0, "operating_days": 20,
-        "status": "checked_out", "customer_name": None,
-        "qr_code": "QR-EQX1002", "rfid_tag": "RFID-EQX1002",
-    },
-    {
-        "id": "EQX1003", "equipment_type": "Bulldozer",
-        "site_id": "S002", "operator_id": "OP203",
-        "checkout_date": datetime(2025, 2, 15, tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 3, 11, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 7.5, "idle_hrs_per_day": 0.5,  "operating_days": 25,
-        "status": "available", "customer_name": "Delta Mining",
-        "qr_code": "QR-EQX1003", "rfid_tag": "RFID-EQX1003",
-    },
-    {
-        "id": "EQX1004", "equipment_type": "Grader",
-        "site_id": "S004", "operator_id": "OP106",
-        "checkout_date": datetime(2025, 5, 5,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 5, 15, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 2.0, "idle_hrs_per_day": 9.0,  "operating_days": 10,
-        "status": "checked_out", "customer_name": "Metro Roads Inc",
-        "qr_code": "QR-EQX1004", "rfid_tag": "RFID-EQX1004",
-    },
-    {
-        "id": "EQX1005", "equipment_type": "Bulldozer",
-        "site_id": "S006", "operator_id": "OP301",
-        "checkout_date": datetime(2025, 1, 1,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 1, 31, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 8.0, "idle_hrs_per_day": 0.0,  "operating_days": 30,
-        "status": "available", "customer_name": "Southworks Ltd",
-        "qr_code": "QR-EQX1005", "rfid_tag": "RFID-EQX1005",
-    },
-    {
-        "id": "EQX1006", "equipment_type": "Grader",
-        "site_id": "S001", "operator_id": "OP114",
-        "checkout_date": datetime(2025, 4, 5,  tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 4, 23, tzinfo=timezone.utc),
-        "engine_hrs_per_day": 3.0, "idle_hrs_per_day": 6.0,  "operating_days": 18,
-        "status": "available", "customer_name": "City Contractors",
-        "qr_code": "QR-EQX1006", "rfid_tag": "RFID-EQX1006",
-    },
-    {
-        "id": "EQX1007", "equipment_type": "Excavator",
-        "site_id": None,           "operator_id": None,       # intentional anomaly
-        "checkout_date": datetime(2025, 3, 20, tzinfo=timezone.utc),
-        "expected_return_date": datetime(2025, 4, 1,  tzinfo=timezone.utc),
-        "engine_hrs_per_day": 0.0, "idle_hrs_per_day": 12.0, "operating_days": 12,
-        "status": "checked_out", "customer_name": None,
-        "qr_code": "QR-EQX1007", "rfid_tag": "RFID-EQX1007",
-    },
-]
+# Historical CSV status differs from the live demo rental scenario.
+# Keep the official CSV unchanged while preserving the three active rentals.
+DEMO_STATUS_OVERRIDES = {"EQX1002": "checked_out", "EQX1004": "checked_out", "EQX1007": "checked_out"}
+REQUIRED_SCENARIO_FILES = (
+    "demand_history_supplement.json", "telemetry_scenarios.json",
+    "golden_insights.json", "forecasts.json", "anomalies.json",
+)
 
 
-def _seed_lifecycle_events(db: Session) -> None:
+def load_assets(data_dir: Path | None = None) -> list[dict]:
+    """Read the official CSV only when explicitly loading or seeding demo data."""
+    directory = Path(data_dir) if data_dir is not None else Settings().data_dir
+    path = directory / "seed" / "official_assets.csv"
+    try:
+        with path.open(newline="", encoding="utf-8-sig") as source:
+            rows = list(csv.DictReader(source))
+    except OSError as error:
+        raise ValueError(f"Demo asset CSV is missing or unreadable: {path}") from error
+    if not rows:
+        raise ValueError(f"Demo asset CSV is empty: {path}")
+
+    records = []
+    for number, row in enumerate(rows, start=2):
+        try:
+            record = {
+                key: row[key] or None
+                for key in ("id", "equipment_type", "status", "site_id", "operator_id",
+                            "customer_name", "qr_code", "rfid_tag")
+            }
+            if not record["id"] or not record["equipment_type"] or not record["status"]:
+                raise ValueError("id, equipment_type and status are required")
+            for key in ("checkout_date", "expected_return_date"):
+                record[key] = datetime.fromisoformat(row[key].replace("Z", "+00:00")) if row[key] else None
+            for key in ("engine_hrs_per_day", "idle_hrs_per_day"):
+                record[key] = float(row[key])
+            record["operating_days"] = int(row["operating_days"])
+            record["status"] = DEMO_STATUS_OVERRIDES.get(record["id"], record["status"])
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise ValueError(f"Invalid demo asset CSV {path}, row {number}: {error}") from error
+        records.append(record)
+    return records
+
+
+def validate_demo_data(data_dir: Path) -> None:
+    """Fail startup with the named input instead of silently missing demo data."""
+    load_assets(data_dir)
+    for filename in REQUIRED_SCENARIO_FILES:
+        path = data_dir / "scenarios" / filename
+        try:
+            with path.open(encoding="utf-8") as source:
+                payload = json.load(source)
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError(f"Missing or invalid demo scenario JSON: {path}") from error
+        if not isinstance(payload, (dict, list)) or not payload:
+            raise ValueError(f"Empty or invalid demo scenario JSON: {path}")
+
+
+def _seed_lifecycle_events(db: Session, assets: list[dict]) -> None:
     """
     Generate CHECKOUT/CHECKIN/OVERDUE_FLAG events from each asset's official
     checkout/return dates, so the lifecycle timeline isn't empty until a live
@@ -103,7 +96,7 @@ def _seed_lifecycle_events(db: Session) -> None:
     from app.clock import get_demo_now
     demo_now = get_demo_now()
 
-    for a in ASSETS:
+    for a in assets:
         asset_id = a["id"]
         if db.query(RentalEvent).filter(RentalEvent.asset_id == asset_id).first():
             continue
@@ -139,6 +132,7 @@ def seed_database(db: Session) -> dict:
     Idempotent — safe to call multiple times.
     Returns counts of inserted records.
     """
+    assets = load_assets(db.info.get("data_dir"))
     counts = {"sites": 0, "operators": 0, "assets": 0}
 
     for s in SITES:
@@ -153,13 +147,13 @@ def seed_database(db: Session) -> dict:
 
     db.flush()  # ensure FKs exist before asset insert
 
-    for a in ASSETS:
+    for a in assets:
         if not db.get(Asset, a["id"]):
             db.add(Asset(**a))
             counts["assets"] += 1
 
     db.commit()
-    _seed_lifecycle_events(db)
+    _seed_lifecycle_events(db, assets)
     return counts
 
 

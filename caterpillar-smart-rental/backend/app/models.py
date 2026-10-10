@@ -10,15 +10,32 @@ rental_events  — checkout / checkin lifecycle events
 telemetry      — timestamped sensor readings per asset
 alerts         — generated anomaly/alert records
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import (
-    Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func
+    Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, func, text
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import TypeDecorator
 
 from app.database import Base
+
+
+class UTCDateTime(TypeDecorator):
+    """Persist naive UTC in SQLite; expose occurrence and receipt times as UTC."""
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+    def process_result_value(self, value, dialect):
+        return value.replace(tzinfo=timezone.utc) if value is not None else None
 
 
 # ---------------------------------------------------------------------------
@@ -94,7 +111,7 @@ class Asset(Base):
         back_populates="asset", order_by="RentalEvent.timestamp.desc()"
     )
     telemetry: Mapped[list["Telemetry"]] = relationship(
-        back_populates="asset", order_by="Telemetry.timestamp.desc()"
+        back_populates="asset", order_by="(Telemetry.timestamp.desc(), Telemetry.id.desc())"
     )
     alerts: Mapped[list["Alert"]] = relationship(
         back_populates="asset", order_by="Alert.created_at.desc()"
@@ -134,10 +151,17 @@ class RentalEvent(Base):
 
 class Telemetry(Base):
     __tablename__ = "telemetry"
+    __table_args__ = (
+        Index("uq_telemetry_event_id", "event_id", unique=True),
+        Index("ix_telemetry_asset_timestamp_id", "asset_id", "timestamp", "id"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     asset_id: Mapped[str] = mapped_column(ForeignKey("assets.id"))
-    timestamp: Mapped[datetime] = mapped_column(DateTime, index=True)
+    timestamp: Mapped[datetime] = mapped_column(UTCDateTime, index=True)
+    event_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    payload_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    received_at: Mapped[Optional[datetime]] = mapped_column(UTCDateTime, nullable=True)
 
     # GPS
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -169,6 +193,10 @@ class Telemetry(Base):
 
 class Alert(Base):
     __tablename__ = "alerts"
+    __table_args__ = (
+        Index("uq_alerts_active_asset_type", "asset_id", "alert_type", unique=True,
+              sqlite_where=text("resolved = 0"), postgresql_where=text("resolved = false")),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     asset_id: Mapped[str] = mapped_column(ForeignKey("assets.id"))
@@ -182,7 +210,8 @@ class Alert(Base):
     evidence: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     resolved: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
-    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=func.now())
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(UTCDateTime, nullable=True)
+    last_seen_at: Mapped[Optional[datetime]] = mapped_column(UTCDateTime, nullable=True)
 
     asset: Mapped[Asset] = relationship(back_populates="alerts")
