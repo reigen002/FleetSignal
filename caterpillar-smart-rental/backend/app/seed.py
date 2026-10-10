@@ -3,6 +3,7 @@ Seed data — the official dataset from the hackathon spec.
 In explicit demo mode: POST /admin/seed or automatic seeding on first startup.
 
 NULL site/operator values are intentional anomalies and preserved exactly.
+Asset records are loaded from the configured official CSV.
 """
 import csv
 import json
@@ -29,9 +30,6 @@ OPERATORS = [
     {"id": "OP114", "name": "Carlos Mendoza",    "license_class": "Medium", "contact": "+63-921-0005"},
 ]
 
-# Historical CSV status differs from the live demo rental scenario.
-# Keep the official CSV unchanged while preserving the three active rentals.
-DEMO_STATUS_OVERRIDES = {"EQX1002": "checked_out", "EQX1004": "checked_out", "EQX1007": "checked_out"}
 REQUIRED_SCENARIO_FILES = (
     "demand_history_supplement.json", "telemetry_scenarios.json",
     "golden_insights.json", "forecasts.json", "anomalies.json",
@@ -65,7 +63,6 @@ def load_assets(data_dir: Path | None = None) -> list[dict]:
             for key in ("engine_hrs_per_day", "idle_hrs_per_day"):
                 record[key] = float(row[key])
             record["operating_days"] = int(row["operating_days"])
-            record["status"] = DEMO_STATUS_OVERRIDES.get(record["id"], record["status"])
         except (KeyError, TypeError, ValueError, AttributeError) as error:
             raise ValueError(f"Invalid demo asset CSV {path}, row {number}: {error}") from error
         records.append(record)

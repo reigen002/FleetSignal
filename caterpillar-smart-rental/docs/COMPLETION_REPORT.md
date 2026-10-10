@@ -6,9 +6,9 @@ Mandatory implementation slices and local acceptance checks are complete. Submis
 
 ## Checkout and preserved work
 
-The starting checkout is `93765221e47233c7b60fe2bdf4d3093070ca7a46`. The requested reviewed commit `373050241210d9ad01aa3bbf0e095233b3761e9b` is absent locally; exact git comparison to it was unavailable. Current source was inspected and executed before changes. No AGENTS.md was found.
+The starting checkout is `93765221e47233c7b60fe2bdf4d3093070ca7a46`. During initial inspection, requested reviewed commit `373050241210d9ad01aa3bbf0e095233b3761e9b` was absent locally; exact git comparison to it was unavailable. Source was inspected and executed before changes. Publication subsequently fetched and integrated that commit through current remote main `d58a313`. No AGENTS.md was found.
 
-Current source had hardcoded seed statuses differing from the historical CSV for EQX1002/1004/1007. Those three checked-out overrides remain explicit in the configured CSV loader. The CSV and utilization/forecast calculations were retained.
+Initial source had hardcoded seed statuses differing from the historical CSV for EQX1002/1004/1007. Review preserved those rental states. The newer upstream commit records the same checked-out states in the CSV itself; publication integration retains that CSV and removes the redundant overrides, keeping the configured CSV authoritative. The existing configured-data test now checks this contract. Utilization/forecast calculations remain unchanged.
 
 The pre-existing `frontend/package-lock.json` change removes 78 lines of optional libc metadata. Those removals remain preserved. Before submission review its SHA-256 was `AD674DD93976C5CE030EB7411904F67C674D6D8369C611C615E9485438639DFA`; after the authorized three-field `source-map-js` patch it is `E854E8BBA469719D337A6B0E4163FC4DC45F88FE17CD6BBCE369FA69F1083A67`. All other lock entries were compared and found identical.
 

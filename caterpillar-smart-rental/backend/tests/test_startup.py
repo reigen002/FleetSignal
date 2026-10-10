@@ -164,6 +164,7 @@ def test_asset_loader_uses_supplied_csv_and_preserves_null_values(tmp_path):
         fieldnames = reader.fieldnames
         rows = list(reader)
     rows[0]["customer_name"] = "Configured fixture customer"
+    rows[1]["status"] = "available"
     with csv_path.open("w", newline="", encoding="utf-8") as target:
         writer = csv.DictWriter(target, fieldnames=fieldnames)
         writer.writeheader()
@@ -172,6 +173,7 @@ def test_asset_loader_uses_supplied_csv_and_preserves_null_values(tmp_path):
     assert assets[0]["customer_name"] == "Configured fixture customer"
     assert assets[1]["site_id"] is None
     assert assets[1]["operator_id"] is None
+    assert assets[1]["status"] == "available"
 
 
 def test_sqlite_foreign_keys_enforced_on_every_connection(tmp_path):
