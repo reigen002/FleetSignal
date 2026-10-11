@@ -1,0 +1,46 @@
+# Separate from local development Compose. Run from the application root.
+name: fleetsignal-aws
+services:
+  backend:
+    build:
+      context: ../..
+      dockerfile: backend/Dockerfile
+    environment:
+      # Enables demo controls, not authentication. Keep ingress closed and use trusted SSM sessions.
+      FLEETSIGNAL_DEMO_MODE: 'true'
+      FLEETSIGNAL_DATA_DIR: /opt/fleetsignal/data
+      FLEETSIGNAL_DATABASE_URL: sqlite:////var/lib/fleetsignal/fleetsignal.db
+      FLEETSIGNAL_SQLITE_BUSY_TIMEOUT_MS: '5000'
+      FLEETSIGNAL_ALLOWED_ORIGINS: '[]'
+    volumes:
+      - type: bind
+        source: /srv/fleetsignal/db
+        target: /var/lib/fleetsignal
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: [CMD, python, '-c', "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    # systemd owns restart, including after reboot; Docker must not start before EBS mounts.
+    restart: 'no'
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+  frontend:
+    build:
+      context: ../..
+      dockerfile: deploy/aws/frontend.Dockerfile
+      args:
+        VITE_API_BASE: /api
+    ports:
+      - '8080:80'
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: 'no'
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
