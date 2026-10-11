@@ -49,3 +49,15 @@ jobs:
           cache-dependency-path: caterpillar-smart-rental/frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  deployment:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: caterpillar-smart-rental
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python deploy/aws/test_deployment.py
