@@ -2,13 +2,7 @@ name: FleetSignal
 
 on:
   push:
-    paths:
-      - 'caterpillar-smart-rental/**'
-      - '.github/workflows/fleetsignal.yml'
   pull_request:
-    paths:
-      - 'caterpillar-smart-rental/**'
-      - '.github/workflows/fleetsignal.yml'
   workflow_dispatch:
 
 permissions:
@@ -60,4 +54,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python deploy/aws/test_deployment.py
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+      - name: Validate deployment Compose
+        run: docker compose -f deploy/aws/compose.yaml config --quiet
+      - name: Lint CloudFormation locally
+        run: uvx --from cfn-lint==1.57.2 cfn-lint deploy/aws/cloudformation.yaml
+      - name: Check setup and user-data shell syntax
+        run: |
+          bash -n deploy/aws/setup.sh
+          python - <<'PY' | bash -n
+          from pathlib import Path
+          import textwrap
+          template = Path('deploy/aws/cloudformation.yaml').read_text(encoding='utf-8')
+          user_data = template.split('        Fn::Base64: |\n', 1)[1].split('\n  DataAttachment:', 1)[0]
+          print(textwrap.dedent(user_data))
+          PY
+      - name: Check CIDR and mocked storage safety
+        run: python deploy/aws/test_deployment.py
