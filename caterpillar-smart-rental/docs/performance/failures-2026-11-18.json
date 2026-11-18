@@ -1,0 +1,53 @@
+{
+  "cases": [
+    {
+      "name": "after_telemetry_insert",
+      "passed": true,
+      "rollback": "full telemetry and alert snapshot unchanged"
+    },
+    {
+      "name": "interrupted_alert_reconciliation",
+      "passed": true,
+      "rollback": "full telemetry and alert snapshot unchanged"
+    },
+    {
+      "name": "database_lock_timeout",
+      "passed": true,
+      "busy_timeout_ms": 50,
+      "status": 503
+    },
+    {
+      "name": "retry_after_lost_response",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "process_restart_persisted_storage",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "out_of_order_arrival",
+      "passed": true,
+      "outside_window": "stored without replacing alert evidence",
+      "inside_window": "hazards active"
+    }
+  ],
+  "isolation": "owned temporary database and loopback process only",
+  "generated_at": "2026-11-18T03:08:09.132870+00:00",
+  "failure_script_sha256": "bf024a88c02850cd87a1a0d92449ba715e37b8268e03dd18c570776af2e8bf93",
+  "hardware": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "cpu": "AMD Ryzen 5 4600H with Radeon Graphics",
+    "logical_cpus": 12,
+    "installed_ram_bytes": 17179869184,
+    "python": "3.11.14",
+    "sqlite": "3.50.4",
+    "versions": {
+      "fastapi": "0.111.0",
+      "sqlalchemy": "2.0.30",
+      "uvicorn": "0.30.1",
+      "httpx": "0.27.0"
+    }
+  }
+}

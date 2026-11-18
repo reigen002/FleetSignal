@@ -152,6 +152,17 @@ The disposable rollback/retry demonstration and fresh Docker ingestion, lock rec
 
 [SUBMISSION_REVIEW.md](docs/SUBMISSION_REVIEW.md) records the final review, browser/clean-setup results and a three-minute demonstration. [COMPLETION_REPORT.md](docs/COMPLETION_REPORT.md) retains the implementation commands, test counts, Docker evidence and limitations. [Hosted PR verification](https://github.com/reigen002/FleetSignal/actions/runs/38059906165) passed locked installation, migrations, **262 tests in 22.95s**, and the frontend build (660 modules, 551ms). The existing frontend bundle warning above 500 kB remains.
 
+## Local performance and failure testing
+
+[PERFORMANCE.md](docs/PERFORMANCE.md) describes the reproducible load matrix, measured local results, failure evidence, and SQLite limitations. From `backend/`:
+
+```bash
+uv run --frozen python scripts/performance.py --matrix --duration 8 --repeats 2 --output ../.tmp/performance-new.json
+uv run --frozen python scripts/failure_scenarios.py --output ../.tmp/failures-new.json
+```
+
+Choose unused output filenames. These commands create their own temporary SQLite databases, synthetic assets, and loopback Uvicorn processes; they accept no existing database or server URL. They never call reset routes. The load generator reports arrival targets, admitted requests, completed HTTP throughput, new committed events, admission drops, latency percentiles, HTTP status counts, and observed transaction contention separately. The failure suite checks rollback, busy timeout, lost-response retries, a hard process restart, interrupted reconciliation, and out-of-order arrivals. The ordinary backend test command includes the new regressions.
+
 ## Optional AWS EC2 demo (not yet live-verified)
 
 The files in [`deploy/aws`](deploy/aws) define one EC2 instance and a separate **encrypted 8 GiB gp3 EBS volume**. They reuse `backend/Dockerfile`, its single Uvicorn process on port 8000, SQLite migrations, demo seed, and existing `/health` and `/ready` endpoints. The repository previously had no frontend Dockerfile: the deployment adds a small Node build/Nginx container for the existing React interface. Local Compose and local development commands are unchanged.

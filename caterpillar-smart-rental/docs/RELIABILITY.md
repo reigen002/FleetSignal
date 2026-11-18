@@ -98,6 +98,8 @@ CORS uses an explicit configured list of local origins, disables credentials, an
 
 ## Reproducible verification
 
+The performance/failure tools in [PERFORMANCE.md](PERFORMANCE.md) add disposable real-HTTP load measurements, six fault scenarios, and regression tests. They reuse the production transaction and migration paths without fault endpoints or database settings changes. Their hard process restart checks committed local SQLite state; it does not establish power-loss, disk-loss, EC2/EBS, or distributed durability. The historical completion report below retains its original scope and evidence date.
+
 The committed lockfiles drive CI and local dependencies: Python 3.11 with uv **0.13.0**, and Node **22.19.0** with `npm ci`. Alembic **1.13.2** is synchronized across backend dependency declarations and the lockfile. CI configures an absolute temporary SQLite path, keeps default demo mode false, runs migrations and backend tests, and builds the frontend. It requires no external API keys or accounts.
 
 From `backend/`:
@@ -122,4 +124,4 @@ From `frontend/`, use `npm ci` and `npm run build`. [COMPLETION_REPORT.md](COMPL
 
 ## Limits of the evidence
 
-The implementation demonstrates local transaction atomicity, event retry behavior, stable episodes, controlled contention, validated schema adoption, and named-volume persistence. It does not establish process-crash durability, distributed exactly-once delivery, cloud deployment, PostgreSQL support, multi-writer scale, streaming ingestion, production timestamp policy, model accuracy, or guaranteed financial savings. The original forecast/scenario data remains a historical synthetic demonstration.
+The implementation demonstrates local transaction atomicity, event retry behavior, stable episodes, controlled contention, validated schema adoption, and named-volume persistence. The performance/failure suite additionally verifies acknowledged local commits across a hard process restart. This does not establish power-loss or disk-loss durability, distributed exactly-once delivery, cloud deployment, PostgreSQL support, multi-writer scale, streaming ingestion, production timestamp policy, model accuracy, or guaranteed financial savings. The original forecast/scenario data remains a historical synthetic demonstration.

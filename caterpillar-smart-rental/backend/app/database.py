@@ -42,4 +42,5 @@ def prepare_database_directory(engine) -> None:
 def get_db(request: Request):
     """Use the same application resources as startup and close each session."""
     with request.app.state.session_factory() as db:
+        db.info["request_id"] = getattr(request.state, "request_id", None)
         yield db
