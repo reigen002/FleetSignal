@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-18T03:05:12.039919+00:00",
+  "hardware": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "cpu": "AMD Ryzen 5 4600H with Radeon Graphics",
+    "logical_cpus": 12,
+    "installed_ram_bytes": 17179869184,
+    "python": "3.11.14",
+    "sqlite": "3.50.4",
+    "versions": {
+      "fastapi": "0.111.0",
+      "sqlalchemy": "2.0.30",
+      "uvicorn": "0.30.1",
+      "httpx": "0.27.0"
+    }
+  },
+  "isolation": "fresh TemporaryDirectory DB and owned loopback subprocess per run",
+  "sampling": "nearest-rank completed-HTTP percentiles; open-loop slots drop at concurrency cap",
+  "source": {
+    "base_commit": "da585de1c293ec9e183be1c8b146b66349192332",
+    "measured_files_sha256": {
+      "app/database.py": "2ec09b50a3113d834019e249d19fb09b1dd0fbf87770075da8c0478f73b439ca",
+      "app/routers/telemetry.py": "dd3cfaa4244bc164e94a9e295c25fbb76533e413be3ba9e1089e1b38cb688614",
+      "app/services/transactions.py": "81e94ad0f9bf5a3e0e80a8f227c384c48d48442c9bfdab36535cefa8c720300e",
+      "scripts/performance.py": "1d61fb42dbf2a21f3c1edb2d40bb36378ee8a6042bb423e917a483767babd542"
+    }
+  },
+  "runs": [
+    {
+      "offered_requests": 8000,
+      "admitted_requests": 661,
+      "dropped_at_concurrency_limit": 7339,
+      "offering_seconds": 8.0014,
+      "elapsed_with_drain_seconds": 9.9968,
+      "observed_offered_rps": 999.826,
+      "admitted_rps": 82.611,
+      "completed_http_rps": 66.121,
+      "committed_new_events_rps": 45.515,
+      "expected_outcome_rps": 64.421,
+      "http_status_counts": {
+        "200": 127,
+        "201": 455,
+        "409": 62,
+        "503": 17
+      },
+      "admitted_mix": {
+        "conflict": 64,
+        "duplicate": 130,
+        "late": 65,
+        "unique": 402
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 93.337,
+        "p95": 2810.892,
+        "p99": 6288.571
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 96.096,
+        "p95": 2814.853,
+        "p99": 6306.477
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.856,
+        "p95": 14.952,
+        "p99": 41.276
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 1000.0,
+        "concurrency": 32,
+        "assets": 32,
+        "workers": 2,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 455,
+        "confirmed_201": 455,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 582,
+          "rolled_back": 62,
+          "busy": 17
+        },
+        "ingestion_outcomes": {
+          "accepted": 455,
+          "duplicate": 127,
+          "conflict": 62,
+          "unavailable": 17
+        },
+        "acquisition_ms": {
+          "p50": 63.799,
+          "p95": 2802.357,
+          "p99": 6209.146
+        },
+        "transaction_ms": {
+          "p50": 73.866,
+          "p95": 2803.31,
+          "p99": 6209.146
+        },
+        "commit_ms": {
+          "p50": 3.848,
+          "p95": 17.749,
+          "p99": 29.488
+        },
+        "sqlite_busy": 17,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 8000,
+      "admitted_requests": 608,
+      "dropped_at_concurrency_limit": 7392,
+      "offering_seconds": 8.0075,
+      "elapsed_with_drain_seconds": 9.9201,
+      "observed_offered_rps": 999.059,
+      "admitted_rps": 75.929,
+      "completed_http_rps": 61.29,
+      "committed_new_events_rps": 42.641,
+      "expected_outcome_rps": 59.677,
+      "http_status_counts": {
+        "200": 120,
+        "201": 423,
+        "409": 49,
+        "503": 16
+      },
+      "admitted_mix": {
+        "conflict": 50,
+        "duplicate": 122,
+        "late": 65,
+        "unique": 371
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 56.768,
+        "p95": 3600.626,
+        "p99": 6043.846
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 58.765,
+        "p95": 3621.644,
+        "p99": 6050.644
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.598,
+        "p95": 12.926,
+        "p99": 40.703
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 1000.0,
+        "concurrency": 32,
+        "assets": 32,
+        "workers": 2,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 423,
+        "confirmed_201": 423,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 543,
+          "rolled_back": 49,
+          "busy": 16
+        },
+        "ingestion_outcomes": {
+          "accepted": 423,
+          "duplicate": 120,
+          "conflict": 49,
+          "unavailable": 16
+        },
+        "acquisition_ms": {
+          "p50": 21.793,
+          "p95": 3551.674,
+          "p99": 6001.227
+        },
+        "transaction_ms": {
+          "p50": 33.77,
+          "p95": 3564.068,
+          "p99": 6001.227
+        },
+        "commit_ms": {
+          "p50": 3.714,
+          "p95": 16.325,
+          "p99": 29.275
+        },
+        "sqlite_busy": 16,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    }
+  ]
+}

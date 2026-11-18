@@ -1,6 +1,7 @@
 """HTTP mapping for the externally identified telemetry ingestion contract."""
 import json
 import logging
+from time import perf_counter
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
@@ -18,9 +19,11 @@ logger = logging.getLogger("fleetsignal")
 @router.post("/events", response_model=TelemetryEventResult, status_code=201)
 def accept_event(body: TelemetryEventIn, request: Request, response: Response,
                  db: Session = Depends(get_db)):
+    started = perf_counter()
     def log(outcome):
         logger.info(json.dumps(dict(event="telemetry_ingestion", request_id=getattr(request.state, "request_id", None),
-                                    event_id=body.event_id, asset_id=body.asset_id, outcome=outcome)))
+                                    event_id=body.event_id, asset_id=body.asset_id, outcome=outcome,
+                                    elapsed_ms=round((perf_counter() - started) * 1000, 3))))
     try:
         result = ingest_event(db, body)
     except EventConflict as error:

@@ -1,0 +1,2149 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-17T17:34:43.783099+00:00",
+  "hardware": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "cpu": "AMD Ryzen 5 4600H with Radeon Graphics",
+    "logical_cpus": 12,
+    "installed_ram_bytes": 17179869184,
+    "python": "3.11.14",
+    "sqlite": "3.50.4",
+    "versions": {
+      "fastapi": "0.111.0",
+      "sqlalchemy": "2.0.30",
+      "uvicorn": "0.30.1",
+      "httpx": "0.27.0"
+    }
+  },
+  "isolation": "fresh TemporaryDirectory DB and owned loopback subprocess per run",
+  "sampling": "nearest-rank completed-HTTP percentiles; open-loop slots drop at concurrency cap",
+  "source": {
+    "base_commit": "da585de1c293ec9e183be1c8b146b66349192332",
+    "measured_files_sha256": {
+      "app/database.py": "2ec09b50a3113d834019e249d19fb09b1dd0fbf87770075da8c0478f73b439ca",
+      "app/routers/telemetry.py": "dd3cfaa4244bc164e94a9e295c25fbb76533e413be3ba9e1089e1b38cb688614",
+      "app/services/transactions.py": "81e94ad0f9bf5a3e0e80a8f227c384c48d48442c9bfdab36535cefa8c720300e",
+      "scripts/performance.py": "1d61fb42dbf2a21f3c1edb2d40bb36378ee8a6042bb423e917a483767babd542"
+    }
+  },
+  "runs": [
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 385,
+      "dropped_at_concurrency_limit": 1215,
+      "offering_seconds": 8.0116,
+      "elapsed_with_drain_seconds": 8.0117,
+      "observed_offered_rps": 199.71,
+      "admitted_rps": 48.055,
+      "completed_http_rps": 48.055,
+      "committed_new_events_rps": 48.055,
+      "expected_outcome_rps": 48.055,
+      "http_status_counts": {
+        "201": 385
+      },
+      "admitted_mix": {
+        "unique": 385
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 13.174,
+        "p95": 27.07,
+        "p99": 30.227
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 17.012,
+        "p95": 32.594,
+        "p99": 43.801
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.295,
+        "p95": 15.181,
+        "p99": 16.051
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 1,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "unique",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 385,
+        "confirmed_201": 385,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 385
+        },
+        "ingestion_outcomes": {
+          "accepted": 385
+        },
+        "acquisition_ms": {
+          "p50": 0.368,
+          "p95": 0.648,
+          "p99": 0.808
+        },
+        "transaction_ms": {
+          "p50": 8.259,
+          "p95": 16.743,
+          "p99": 19.171
+        },
+        "commit_ms": {
+          "p50": 2.765,
+          "p95": 4.747,
+          "p99": 6.896
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 489,
+      "dropped_at_concurrency_limit": 1111,
+      "offering_seconds": 8.0004,
+      "elapsed_with_drain_seconds": 8.173,
+      "observed_offered_rps": 199.99,
+      "admitted_rps": 61.122,
+      "completed_http_rps": 59.831,
+      "committed_new_events_rps": 59.831,
+      "expected_outcome_rps": 59.831,
+      "http_status_counts": {
+        "201": 489
+      },
+      "admitted_mix": {
+        "unique": 489
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 45.713,
+        "p95": 569.516,
+        "p99": 1615.047
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 49.189,
+        "p95": 580.47,
+        "p99": 1617.148
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.522,
+        "p95": 11.06,
+        "p99": 13.441
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 8,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "unique",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 489,
+        "confirmed_201": 489,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 489
+        },
+        "ingestion_outcomes": {
+          "accepted": 489
+        },
+        "acquisition_ms": {
+          "p50": 25.809,
+          "p95": 552.816,
+          "p99": 1586.622
+        },
+        "transaction_ms": {
+          "p50": 36.835,
+          "p95": 562.325,
+          "p99": 1601.35
+        },
+        "commit_ms": {
+          "p50": 2.801,
+          "p95": 3.967,
+          "p99": 10.506
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 616,
+      "dropped_at_concurrency_limit": 984,
+      "offering_seconds": 8.001,
+      "elapsed_with_drain_seconds": 9.247,
+      "observed_offered_rps": 199.975,
+      "admitted_rps": 76.99,
+      "completed_http_rps": 66.616,
+      "committed_new_events_rps": 65.751,
+      "expected_outcome_rps": 65.751,
+      "http_status_counts": {
+        "201": 608,
+        "503": 8
+      },
+      "admitted_mix": {
+        "unique": 616
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 229.157,
+        "p95": 795.752,
+        "p99": 5920.687
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 233.106,
+        "p95": 799.097,
+        "p99": 5924.827
+      },
+      "dispatch_lag_ms": {
+        "p50": 4.379,
+        "p95": 11.465,
+        "p99": 14.346
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 32,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "unique",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 608,
+        "confirmed_201": 608,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 608,
+          "busy": 8
+        },
+        "ingestion_outcomes": {
+          "accepted": 608,
+          "unavailable": 8
+        },
+        "acquisition_ms": {
+          "p50": 201.904,
+          "p95": 763.561,
+          "p99": 5846.586
+        },
+        "transaction_ms": {
+          "p50": 214.063,
+          "p95": 776.7,
+          "p99": 5846.586
+        },
+        "commit_ms": {
+          "p50": 3.205,
+          "p95": 4.753,
+          "p99": 19.499
+        },
+        "sqlite_busy": 8,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 628,
+      "dropped_at_concurrency_limit": 972,
+      "offering_seconds": 8.0084,
+      "elapsed_with_drain_seconds": 8.5259,
+      "observed_offered_rps": 199.791,
+      "admitted_rps": 78.418,
+      "completed_http_rps": 73.658,
+      "committed_new_events_rps": 53.367,
+      "expected_outcome_rps": 73.658,
+      "http_status_counts": {
+        "200": 111,
+        "201": 455,
+        "409": 62
+      },
+      "admitted_mix": {
+        "conflict": 62,
+        "duplicate": 111,
+        "late": 59,
+        "unique": 396
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 28.097,
+        "p95": 971.376,
+        "p99": 3479.277
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 32.393,
+        "p95": 979.471,
+        "p99": 3485.951
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.768,
+        "p95": 11.424,
+        "p99": 13.422
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 455,
+        "confirmed_201": 455,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 566,
+          "rolled_back": 62
+        },
+        "ingestion_outcomes": {
+          "accepted": 455,
+          "duplicate": 111,
+          "conflict": 62
+        },
+        "acquisition_ms": {
+          "p50": 4.766,
+          "p95": 948.521,
+          "p99": 3450.156
+        },
+        "transaction_ms": {
+          "p50": 16.291,
+          "p95": 958.298,
+          "p99": 3460.954
+        },
+        "commit_ms": {
+          "p50": 3.002,
+          "p95": 4.627,
+          "p99": 18.779
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 786,
+      "dropped_at_concurrency_limit": 814,
+      "offering_seconds": 8.0059,
+      "elapsed_with_drain_seconds": 8.4149,
+      "observed_offered_rps": 199.852,
+      "admitted_rps": 98.177,
+      "completed_http_rps": 93.406,
+      "committed_new_events_rps": 65.717,
+      "expected_outcome_rps": 93.168,
+      "http_status_counts": {
+        "200": 148,
+        "201": 553,
+        "409": 83,
+        "503": 2
+      },
+      "admitted_mix": {
+        "conflict": 83,
+        "duplicate": 148,
+        "late": 90,
+        "unique": 465
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 21.594,
+        "p95": 727.665,
+        "p99": 3125.066
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 25.009,
+        "p95": 731.524,
+        "p99": 3126.241
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.401,
+        "p95": 9.636,
+        "p99": 12.604
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 553,
+        "confirmed_201": 553,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 701,
+          "rolled_back": 83,
+          "busy": 2
+        },
+        "ingestion_outcomes": {
+          "accepted": 553,
+          "duplicate": 148,
+          "conflict": 83,
+          "unavailable": 2
+        },
+        "acquisition_ms": {
+          "p50": 3.853,
+          "p95": 708.12,
+          "p99": 3105.045
+        },
+        "transaction_ms": {
+          "p50": 11.655,
+          "p95": 719.582,
+          "p99": 3116.191
+        },
+        "commit_ms": {
+          "p50": 2.632,
+          "p95": 3.814,
+          "p99": 6.311
+        },
+        "sqlite_busy": 2,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 1600,
+      "dropped_at_concurrency_limit": 0,
+      "offering_seconds": 8.0019,
+      "elapsed_with_drain_seconds": 8.0047,
+      "observed_offered_rps": 199.953,
+      "admitted_rps": 199.953,
+      "completed_http_rps": 199.883,
+      "committed_new_events_rps": 0.0,
+      "expected_outcome_rps": 199.883,
+      "http_status_counts": {
+        "200": 1600
+      },
+      "admitted_mix": {
+        "duplicate": 1600
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 10.002,
+        "p95": 54.153,
+        "p99": 202.592
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 12.472,
+        "p95": 57.949,
+        "p99": 209.403
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.845,
+        "p95": 5.361,
+        "p99": 9.419
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "duplicate",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 0,
+        "confirmed_201": 0,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 1600
+        },
+        "ingestion_outcomes": {
+          "duplicate": 1600
+        },
+        "acquisition_ms": {
+          "p50": 0.443,
+          "p95": 37.747,
+          "p99": 179.144
+        },
+        "transaction_ms": {
+          "p50": 1.568,
+          "p95": 39.617,
+          "p99": 181.001
+        },
+        "commit_ms": {
+          "p50": 0.214,
+          "p95": 0.849,
+          "p99": 3.491
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 1600,
+      "dropped_at_concurrency_limit": 0,
+      "offering_seconds": 8.0028,
+      "elapsed_with_drain_seconds": 8.0059,
+      "observed_offered_rps": 199.93,
+      "admitted_rps": 199.93,
+      "completed_http_rps": 199.852,
+      "committed_new_events_rps": 0.0,
+      "expected_outcome_rps": 199.852,
+      "http_status_counts": {
+        "409": 1600
+      },
+      "admitted_mix": {
+        "conflict": 1600
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 6.867,
+        "p95": 45.403,
+        "p99": 117.912
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 9.018,
+        "p95": 47.899,
+        "p99": 118.387
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.947,
+        "p95": 4.462,
+        "p99": 6.509
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "conflict",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 0,
+        "confirmed_201": 0,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "rolled_back": 1600
+        },
+        "ingestion_outcomes": {
+          "conflict": 1600
+        },
+        "acquisition_ms": {
+          "p50": 0.389,
+          "p95": 15.137,
+          "p99": 83.105
+        },
+        "transaction_ms": {
+          "p50": 1.297,
+          "p95": 16.478,
+          "p99": 84.559
+        },
+        "commit_ms": {
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 729,
+      "dropped_at_concurrency_limit": 871,
+      "offering_seconds": 8.0045,
+      "elapsed_with_drain_seconds": 8.5071,
+      "observed_offered_rps": 199.888,
+      "admitted_rps": 91.074,
+      "completed_http_rps": 85.693,
+      "committed_new_events_rps": 85.458,
+      "expected_outcome_rps": 85.458,
+      "http_status_counts": {
+        "201": 727,
+        "503": 2
+      },
+      "admitted_mix": {
+        "late": 729
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 21.399,
+        "p95": 834.683,
+        "p99": 3973.964
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 24.111,
+        "p95": 838.327,
+        "p99": 3977.253
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.281,
+        "p95": 9.153,
+        "p99": 11.27
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "late",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 727,
+        "confirmed_201": 727,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 727,
+          "busy": 2
+        },
+        "ingestion_outcomes": {
+          "accepted": 727,
+          "unavailable": 2
+        },
+        "acquisition_ms": {
+          "p50": 3.063,
+          "p95": 801.497,
+          "p99": 3944.328
+        },
+        "transaction_ms": {
+          "p50": 11.865,
+          "p95": 809.069,
+          "p99": 3952.37
+        },
+        "commit_ms": {
+          "p50": 2.713,
+          "p95": 4.126,
+          "p99": 19.317
+        },
+        "sqlite_busy": 2,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 641,
+      "dropped_at_concurrency_limit": 959,
+      "offering_seconds": 8.0032,
+      "elapsed_with_drain_seconds": 8.5407,
+      "observed_offered_rps": 199.919,
+      "admitted_rps": 80.093,
+      "completed_http_rps": 75.052,
+      "committed_new_events_rps": 53.626,
+      "expected_outcome_rps": 75.052,
+      "http_status_counts": {
+        "200": 109,
+        "201": 458,
+        "409": 74
+      },
+      "admitted_mix": {
+        "conflict": 74,
+        "duplicate": 109,
+        "late": 71,
+        "unique": 387
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 22.05,
+        "p95": 1060.906,
+        "p99": 4005.029
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 26.456,
+        "p95": 1064.557,
+        "p99": 4009.492
+      },
+      "dispatch_lag_ms": {
+        "p50": 4.068,
+        "p95": 10.461,
+        "p99": 11.707
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 2,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 458,
+        "confirmed_201": 458,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 567,
+          "rolled_back": 74
+        },
+        "ingestion_outcomes": {
+          "accepted": 458,
+          "duplicate": 109,
+          "conflict": 74
+        },
+        "acquisition_ms": {
+          "p50": 0.606,
+          "p95": 1043.763,
+          "p99": 3986.861
+        },
+        "transaction_ms": {
+          "p50": 11.805,
+          "p95": 1052.641,
+          "p99": 3994.898
+        },
+        "commit_ms": {
+          "p50": 2.625,
+          "p95": 4.135,
+          "p99": 18.876
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 8000,
+      "admitted_requests": 1000,
+      "dropped_at_concurrency_limit": 7000,
+      "offering_seconds": 8.0022,
+      "elapsed_with_drain_seconds": 9.1304,
+      "observed_offered_rps": 999.721,
+      "admitted_rps": 124.965,
+      "completed_http_rps": 109.524,
+      "committed_new_events_rps": 75.791,
+      "expected_outcome_rps": 108.757,
+      "http_status_counts": {
+        "200": 193,
+        "201": 692,
+        "409": 108,
+        "503": 7
+      },
+      "admitted_mix": {
+        "conflict": 109,
+        "duplicate": 195,
+        "late": 97,
+        "unique": 599
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 146.379,
+        "p95": 306.021,
+        "p99": 4846.818
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 149.207,
+        "p95": 309.743,
+        "p99": 4858.68
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.599,
+        "p95": 8.659,
+        "p99": 11.267
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 1000,
+        "concurrency": 32,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 692,
+        "confirmed_201": 692,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 885,
+          "rolled_back": 108,
+          "busy": 7
+        },
+        "ingestion_outcomes": {
+          "accepted": 692,
+          "duplicate": 193,
+          "conflict": 108,
+          "unavailable": 7
+        },
+        "acquisition_ms": {
+          "p50": 127.733,
+          "p95": 274.802,
+          "p99": 4739.329
+        },
+        "transaction_ms": {
+          "p50": 135.454,
+          "p95": 284.452,
+          "p99": 4740.676
+        },
+        "commit_ms": {
+          "p50": 2.68,
+          "p95": 3.821,
+          "p99": 19.388
+        },
+        "sqlite_busy": 7,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 8000,
+      "admitted_requests": 1175,
+      "dropped_at_concurrency_limit": 6825,
+      "offering_seconds": 8.0106,
+      "elapsed_with_drain_seconds": 8.2076,
+      "observed_offered_rps": 998.677,
+      "admitted_rps": 146.681,
+      "completed_http_rps": 143.161,
+      "committed_new_events_rps": 45.811,
+      "expected_outcome_rps": 63.113,
+      "http_status_counts": {
+        "200": 104,
+        "201": 376,
+        "409": 38,
+        "503": 657
+      },
+      "admitted_mix": {
+        "conflict": 104,
+        "duplicate": 233,
+        "late": 125,
+        "unique": 713
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 226.786,
+        "p95": 389.707,
+        "p99": 447.46
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 229.823,
+        "p95": 392.69,
+        "p99": 456.101
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.847,
+        "p95": 9.587,
+        "p99": 66.513
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 1000,
+        "concurrency": 32,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 50,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 50,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 376,
+        "confirmed_201": 376,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 480,
+          "rolled_back": 38,
+          "busy": 657
+        },
+        "ingestion_outcomes": {
+          "accepted": 376,
+          "duplicate": 104,
+          "conflict": 38,
+          "unavailable": 657
+        },
+        "acquisition_ms": {
+          "p50": 132.668,
+          "p95": 249.049,
+          "p99": 288.365
+        },
+        "transaction_ms": {
+          "p50": 135.947,
+          "p95": 249.049,
+          "p99": 288.517
+        },
+        "commit_ms": {
+          "p50": 3.011,
+          "p95": 6.76,
+          "p99": 20.106
+        },
+        "sqlite_busy": 657,
+        "malformed_json_lines": 0
+      },
+      "repeat": 1
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 452,
+      "dropped_at_concurrency_limit": 1148,
+      "offering_seconds": 8.0061,
+      "elapsed_with_drain_seconds": 8.0064,
+      "observed_offered_rps": 199.848,
+      "admitted_rps": 56.457,
+      "completed_http_rps": 56.455,
+      "committed_new_events_rps": 56.455,
+      "expected_outcome_rps": 56.455,
+      "http_status_counts": {
+        "201": 452
+      },
+      "admitted_mix": {
+        "unique": 452
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 12.667,
+        "p95": 15.479,
+        "p99": 19.636
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 16.144,
+        "p95": 28.473,
+        "p99": 33.025
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.318,
+        "p95": 14.942,
+        "p99": 15.928
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 1,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "unique",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 452,
+        "confirmed_201": 452,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 452
+        },
+        "ingestion_outcomes": {
+          "accepted": 452
+        },
+        "acquisition_ms": {
+          "p50": 0.336,
+          "p95": 0.58,
+          "p99": 0.711
+        },
+        "transaction_ms": {
+          "p50": 7.786,
+          "p95": 9.905,
+          "p99": 11.095
+        },
+        "commit_ms": {
+          "p50": 2.597,
+          "p95": 3.51,
+          "p99": 4.164
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 494,
+      "dropped_at_concurrency_limit": 1106,
+      "offering_seconds": 8.0036,
+      "elapsed_with_drain_seconds": 8.1568,
+      "observed_offered_rps": 199.91,
+      "admitted_rps": 61.722,
+      "completed_http_rps": 60.563,
+      "committed_new_events_rps": 60.563,
+      "expected_outcome_rps": 60.563,
+      "http_status_counts": {
+        "201": 494
+      },
+      "admitted_mix": {
+        "unique": 494
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 33.326,
+        "p95": 597.37,
+        "p99": 1792.285
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 43.837,
+        "p95": 601.779,
+        "p99": 1795.18
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.38,
+        "p95": 10.337,
+        "p99": 12.114
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 8,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "unique",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 494,
+        "confirmed_201": 494,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 494
+        },
+        "ingestion_outcomes": {
+          "accepted": 494
+        },
+        "acquisition_ms": {
+          "p50": 14.101,
+          "p95": 579.98,
+          "p99": 1774.101
+        },
+        "transaction_ms": {
+          "p50": 26.114,
+          "p95": 588.367,
+          "p99": 1784.813
+        },
+        "commit_ms": {
+          "p50": 2.709,
+          "p95": 3.69,
+          "p99": 18.962
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 758,
+      "dropped_at_concurrency_limit": 842,
+      "offering_seconds": 8.0017,
+      "elapsed_with_drain_seconds": 9.4926,
+      "observed_offered_rps": 199.957,
+      "admitted_rps": 94.73,
+      "completed_http_rps": 79.852,
+      "committed_new_events_rps": 78.693,
+      "expected_outcome_rps": 78.693,
+      "http_status_counts": {
+        "201": 747,
+        "503": 11
+      },
+      "admitted_mix": {
+        "unique": 758
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 182.718,
+        "p95": 360.621,
+        "p99": 6090.054
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 187.069,
+        "p95": 362.441,
+        "p99": 6092.65
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.909,
+        "p95": 9.647,
+        "p99": 12.533
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 32,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "unique",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 747,
+        "confirmed_201": 747,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 747,
+          "busy": 11
+        },
+        "ingestion_outcomes": {
+          "accepted": 747,
+          "unavailable": 11
+        },
+        "acquisition_ms": {
+          "p50": 161.751,
+          "p95": 337.473,
+          "p99": 6018.791
+        },
+        "transaction_ms": {
+          "p50": 171.61,
+          "p95": 347.256,
+          "p99": 6018.791
+        },
+        "commit_ms": {
+          "p50": 2.875,
+          "p95": 4.061,
+          "p99": 18.595
+        },
+        "sqlite_busy": 11,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 782,
+      "dropped_at_concurrency_limit": 818,
+      "offering_seconds": 8.0114,
+      "elapsed_with_drain_seconds": 8.4552,
+      "observed_offered_rps": 199.714,
+      "admitted_rps": 97.61,
+      "completed_http_rps": 92.488,
+      "committed_new_events_rps": 64.339,
+      "expected_outcome_rps": 92.133,
+      "http_status_counts": {
+        "200": 152,
+        "201": 544,
+        "409": 83,
+        "503": 3
+      },
+      "admitted_mix": {
+        "conflict": 83,
+        "duplicate": 152,
+        "late": 81,
+        "unique": 466
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 22.512,
+        "p95": 790.936,
+        "p99": 2594.59
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 26.236,
+        "p95": 793.553,
+        "p99": 2595.936
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.677,
+        "p95": 10.174,
+        "p99": 12.19
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 1,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 544,
+        "confirmed_201": 544,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 696,
+          "rolled_back": 83,
+          "busy": 3
+        },
+        "ingestion_outcomes": {
+          "accepted": 544,
+          "duplicate": 152,
+          "conflict": 83,
+          "unavailable": 3
+        },
+        "acquisition_ms": {
+          "p50": 4.647,
+          "p95": 771.753,
+          "p99": 2563.742
+        },
+        "transaction_ms": {
+          "p50": 12.438,
+          "p95": 781.56,
+          "p99": 2572.787
+        },
+        "commit_ms": {
+          "p50": 2.619,
+          "p95": 3.725,
+          "p99": 18.828
+        },
+        "sqlite_busy": 3,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 757,
+      "dropped_at_concurrency_limit": 843,
+      "offering_seconds": 8.005,
+      "elapsed_with_drain_seconds": 8.4372,
+      "observed_offered_rps": 199.875,
+      "admitted_rps": 94.566,
+      "completed_http_rps": 89.722,
+      "committed_new_events_rps": 63.528,
+      "expected_outcome_rps": 89.248,
+      "http_status_counts": {
+        "200": 133,
+        "201": 536,
+        "409": 84,
+        "503": 4
+      },
+      "admitted_mix": {
+        "conflict": 84,
+        "duplicate": 134,
+        "late": 73,
+        "unique": 466
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 23.445,
+        "p95": 842.532,
+        "p99": 3802.137
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 27.527,
+        "p95": 844.873,
+        "p99": 3807.259
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.594,
+        "p95": 9.927,
+        "p99": 12.159
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 536,
+        "confirmed_201": 536,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 669,
+          "rolled_back": 84,
+          "busy": 4
+        },
+        "ingestion_outcomes": {
+          "accepted": 536,
+          "conflict": 84,
+          "duplicate": 133,
+          "unavailable": 4
+        },
+        "acquisition_ms": {
+          "p50": 5.052,
+          "p95": 816.54,
+          "p99": 3780.336
+        },
+        "transaction_ms": {
+          "p50": 13.437,
+          "p95": 828.046,
+          "p99": 3790.685
+        },
+        "commit_ms": {
+          "p50": 2.737,
+          "p95": 4.186,
+          "p99": 19.234
+        },
+        "sqlite_busy": 4,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 1556,
+      "dropped_at_concurrency_limit": 44,
+      "offering_seconds": 8.0001,
+      "elapsed_with_drain_seconds": 8.0154,
+      "observed_offered_rps": 199.998,
+      "admitted_rps": 194.498,
+      "completed_http_rps": 194.125,
+      "committed_new_events_rps": 0.0,
+      "expected_outcome_rps": 194.125,
+      "http_status_counts": {
+        "200": 1556
+      },
+      "admitted_mix": {
+        "duplicate": 1556
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 12.158,
+        "p95": 115.725,
+        "p99": 596.817
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 14.519,
+        "p95": 117.533,
+        "p99": 601.63
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.696,
+        "p95": 5.748,
+        "p99": 10.789
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "duplicate",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 0,
+        "confirmed_201": 0,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 1556
+        },
+        "ingestion_outcomes": {
+          "duplicate": 1556
+        },
+        "acquisition_ms": {
+          "p50": 0.529,
+          "p95": 90.923,
+          "p99": 587.113
+        },
+        "transaction_ms": {
+          "p50": 1.965,
+          "p95": 92.599,
+          "p99": 588.956
+        },
+        "commit_ms": {
+          "p50": 0.267,
+          "p95": 1.051,
+          "p99": 14.101
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 1600,
+      "dropped_at_concurrency_limit": 0,
+      "offering_seconds": 8.0038,
+      "elapsed_with_drain_seconds": 8.0048,
+      "observed_offered_rps": 199.906,
+      "admitted_rps": 199.906,
+      "completed_http_rps": 199.88,
+      "committed_new_events_rps": 0.0,
+      "expected_outcome_rps": 199.88,
+      "http_status_counts": {
+        "409": 1600
+      },
+      "admitted_mix": {
+        "conflict": 1600
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 9.002,
+        "p95": 41.487,
+        "p99": 113.981
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 11.078,
+        "p95": 43.857,
+        "p99": 115.12
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.894,
+        "p95": 5.325,
+        "p99": 6.7
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "conflict",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 0,
+        "confirmed_201": 0,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "rolled_back": 1600
+        },
+        "ingestion_outcomes": {
+          "conflict": 1600
+        },
+        "acquisition_ms": {
+          "p50": 0.458,
+          "p95": 27.371,
+          "p99": 101.182
+        },
+        "transaction_ms": {
+          "p50": 1.504,
+          "p95": 30.022,
+          "p99": 102.997
+        },
+        "commit_ms": {
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "sqlite_busy": 0,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 692,
+      "dropped_at_concurrency_limit": 908,
+      "offering_seconds": 8.0005,
+      "elapsed_with_drain_seconds": 8.8747,
+      "observed_offered_rps": 199.988,
+      "admitted_rps": 86.495,
+      "completed_http_rps": 77.974,
+      "committed_new_events_rps": 77.862,
+      "expected_outcome_rps": 77.862,
+      "http_status_counts": {
+        "201": 691,
+        "503": 1
+      },
+      "admitted_mix": {
+        "late": 692
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 22.6,
+        "p95": 853.162,
+        "p99": 4665.291
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 25.921,
+        "p95": 854.033,
+        "p99": 4674.385
+      },
+      "dispatch_lag_ms": {
+        "p50": 3.533,
+        "p95": 9.706,
+        "p99": 13.623
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "late",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 691,
+        "confirmed_201": 691,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 691,
+          "busy": 1
+        },
+        "ingestion_outcomes": {
+          "accepted": 691,
+          "unavailable": 1
+        },
+        "acquisition_ms": {
+          "p50": 3.589,
+          "p95": 835.329,
+          "p99": 4647.901
+        },
+        "transaction_ms": {
+          "p50": 12.661,
+          "p95": 844.395,
+          "p99": 4655.5
+        },
+        "commit_ms": {
+          "p50": 2.824,
+          "p95": 4.119,
+          "p99": 19.547
+        },
+        "sqlite_busy": 1,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 1600,
+      "admitted_requests": 634,
+      "dropped_at_concurrency_limit": 966,
+      "offering_seconds": 8.0017,
+      "elapsed_with_drain_seconds": 8.5644,
+      "observed_offered_rps": 199.957,
+      "admitted_rps": 79.233,
+      "completed_http_rps": 74.028,
+      "committed_new_events_rps": 51.843,
+      "expected_outcome_rps": 73.794,
+      "http_status_counts": {
+        "200": 118,
+        "201": 444,
+        "409": 70,
+        "503": 2
+      },
+      "admitted_mix": {
+        "conflict": 71,
+        "duplicate": 118,
+        "late": 58,
+        "unique": 387
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 28.227,
+        "p95": 1133.465,
+        "p99": 3352.508
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 33.778,
+        "p95": 1133.587,
+        "p99": 3360.435
+      },
+      "dispatch_lag_ms": {
+        "p50": 4.365,
+        "p95": 10.73,
+        "p99": 12.512
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 200,
+        "concurrency": 16,
+        "assets": 32,
+        "workers": 2,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 444,
+        "confirmed_201": 444,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 562,
+          "rolled_back": 70,
+          "busy": 2
+        },
+        "ingestion_outcomes": {
+          "accepted": 444,
+          "duplicate": 118,
+          "conflict": 70,
+          "unavailable": 2
+        },
+        "acquisition_ms": {
+          "p50": 11.07,
+          "p95": 1114.04,
+          "p99": 3341.484
+        },
+        "transaction_ms": {
+          "p50": 19.659,
+          "p95": 1123.417,
+          "p99": 3342.789
+        },
+        "commit_ms": {
+          "p50": 2.66,
+          "p95": 3.755,
+          "p99": 14.064
+        },
+        "sqlite_busy": 2,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 8000,
+      "admitted_requests": 992,
+      "dropped_at_concurrency_limit": 7008,
+      "offering_seconds": 8.0061,
+      "elapsed_with_drain_seconds": 8.8464,
+      "observed_offered_rps": 999.242,
+      "admitted_rps": 123.906,
+      "completed_http_rps": 112.137,
+      "committed_new_events_rps": 73.816,
+      "expected_outcome_rps": 111.006,
+      "http_status_counts": {
+        "200": 209,
+        "201": 653,
+        "409": 120,
+        "503": 10
+      },
+      "admitted_mix": {
+        "conflict": 121,
+        "duplicate": 211,
+        "late": 93,
+        "unique": 567
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 145.21,
+        "p95": 275.423,
+        "p99": 5971.004
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 148.791,
+        "p95": 277.089,
+        "p99": 5980.288
+      },
+      "dispatch_lag_ms": {
+        "p50": 2.23,
+        "p95": 9.249,
+        "p99": 13.929
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 1000,
+        "concurrency": 32,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 5000,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 5000,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 653,
+        "confirmed_201": 653,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 862,
+          "rolled_back": 120,
+          "busy": 10
+        },
+        "ingestion_outcomes": {
+          "accepted": 653,
+          "duplicate": 209,
+          "conflict": 120,
+          "unavailable": 10
+        },
+        "acquisition_ms": {
+          "p50": 126.203,
+          "p95": 250.697,
+          "p99": 5841.307
+        },
+        "transaction_ms": {
+          "p50": 132.628,
+          "p95": 259.802,
+          "p99": 5841.307
+        },
+        "commit_ms": {
+          "p50": 2.667,
+          "p95": 3.852,
+          "p99": 18.194
+        },
+        "sqlite_busy": 10,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    },
+    {
+      "offered_requests": 8000,
+      "admitted_requests": 1338,
+      "dropped_at_concurrency_limit": 6662,
+      "offering_seconds": 8.0045,
+      "elapsed_with_drain_seconds": 8.1915,
+      "observed_offered_rps": 999.44,
+      "admitted_rps": 167.156,
+      "completed_http_rps": 163.34,
+      "committed_new_events_rps": 50.418,
+      "expected_outcome_rps": 73.735,
+      "http_status_counts": {
+        "200": 121,
+        "201": 413,
+        "409": 70,
+        "503": 734
+      },
+      "admitted_mix": {
+        "conflict": 135,
+        "duplicate": 283,
+        "late": 136,
+        "unique": 784
+      },
+      "transport_errors": 0,
+      "unexpected_http_responses": 0,
+      "http_latency_ms": {
+        "p50": 207.356,
+        "p95": 305.482,
+        "p99": 349.84
+      },
+      "scheduled_to_completion_ms": {
+        "p50": 210.691,
+        "p95": 309.104,
+        "p99": 351.238
+      },
+      "dispatch_lag_ms": {
+        "p50": 1.59,
+        "p95": 8.644,
+        "p99": 23.109
+      },
+      "config": {
+        "duration_seconds": 8.0,
+        "target_rps": 1000,
+        "concurrency": 32,
+        "assets": 32,
+        "workers": 1,
+        "busy_timeout_ms": 50,
+        "workload": "mixed",
+        "initial_rows_per_asset": 20
+      },
+      "database": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "foreign_keys": 1,
+        "busy_timeout": 50,
+        "pool_class": "QueuePool",
+        "pool_size": 5,
+        "max_overflow": 10
+      },
+      "recent_query_plan": [
+        "SEARCH telemetry USING INDEX ix_telemetry_asset_timestamp_id (asset_id=?)"
+      ],
+      "audit": {
+        "passed": true,
+        "committed_new_rows": 413,
+        "confirmed_201": 413,
+        "foreign_keys": "ok",
+        "integrity": "ok",
+        "latest_20_alerts": "ok"
+      },
+      "signals": {
+        "transaction_outcomes": {
+          "committed": 534,
+          "busy": 734,
+          "rolled_back": 70
+        },
+        "ingestion_outcomes": {
+          "accepted": 413,
+          "duplicate": 121,
+          "unavailable": 734,
+          "conflict": 70
+        },
+        "acquisition_ms": {
+          "p50": 146.646,
+          "p95": 237.553,
+          "p99": 287.852
+        },
+        "transaction_ms": {
+          "p50": 147.445,
+          "p95": 237.553,
+          "p99": 287.852
+        },
+        "commit_ms": {
+          "p50": 3.052,
+          "p95": 5.605,
+          "p99": 19.943
+        },
+        "sqlite_busy": 734,
+        "malformed_json_lines": 0
+      },
+      "repeat": 2
+    }
+  ]
+}

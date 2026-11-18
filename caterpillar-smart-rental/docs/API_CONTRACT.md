@@ -363,6 +363,8 @@ The window is row-based, not an expiry timer. A normal reading does not resolve 
 
 ## Request correlation and errors
 
+Ingestion records also report service `elapsed_ms`. A `write_transaction` record adds correlated acquisition, commit, and total elapsed milliseconds, transaction outcome, phase, and a bounded SQLite busy/locked classification. Acquisition includes SQLAlchemy pool checkout; it is not a pure lock-wait measurement. These are diagnostic logs, not additional response fields or a metrics endpoint. Aggregate counts by bounded outcomes/statuses, never event, asset, or request IDs. See [PERFORMANCE.md](PERFORMANCE.md) for measurements and failure testing.
+
 All responses include `X-Request-ID`, including validation, conflict, unavailable, and unexpected-error responses. A supplied ID is accepted only when it matches `[A-Za-z0-9._:-]{1,64}`; otherwise the server assigns a UUID. Unexpected failures return:
 
 ```json
